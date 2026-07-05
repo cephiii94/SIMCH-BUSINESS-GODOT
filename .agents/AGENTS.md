@@ -18,3 +18,4 @@ The project follows a modular architecture so every system can be reused in futu
 - **Preserve Architecture**: Preserve the existing architecture unless explicitly instructed otherwise.
 - **Ask for Clarification**: If requirements are unclear, ask the user instead of making assumptions.
 - **Standards**: Follow Godot 4 best practices and the official GDScript style guide.
+- **Bahasa**: implementation plan atau file doc .md gunakan bahasa indonesia.
