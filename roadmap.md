@@ -13,16 +13,16 @@
 Membangun pondasi proyek agar rapi, scalable, dan mudah dikembangkan.
 
 ### Tasks
-- [ ] Membuat repository Git
-- [ ] Membuat project Godot 4
-- [ ] Menyiapkan struktur folder
-- [ ] Membuat README.md
-- [ ] Membuat LICENSE
-- [ ] Membuat .gitignore
-- [ ] Menyiapkan folder docs
-- [ ] Menentukan coding convention
-- [ ] Menentukan naming convention
-- [ ] Commit pertama
+- [x] Membuat repository Git
+- [x] Membuat project Godot 4
+- [x] Menyiapkan struktur folder
+- [x] Membuat README.md
+- [x] Membuat LICENSE
+- [x] Membuat .gitignore
+- [x] Menyiapkan folder docs
+- [x] Menentukan coding convention
+- [x] Menentukan naming convention
+- [x] Commit pertama
 
 ### Deliverables
 - Project dapat dibuka di Godot
