@@ -57,12 +57,12 @@ Semua gameplay utama sudah terdokumentasi.
 Merancang struktur teknis game.
 
 ### Tasks
-- [ ] Menentukan Scene Tree
-- [ ] Menentukan Folder Script
-- [ ] Menentukan Singleton (Autoload)
-- [ ] Menentukan Data Structure
-- [ ] Menentukan Resource Structure
-- [ ] Menentukan Save Structure
+- [x] Menentukan Scene Tree
+- [x] Menentukan Folder Script
+- [x] Menentukan Singleton (Autoload)
+- [x] Menentukan Data Structure
+- [x] Menentukan Resource Structure
+- [x] Menentukan Save Structure
 
 ### Deliverables
 Blueprint arsitektur proyek selesai.
