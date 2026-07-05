@@ -37,14 +37,14 @@ Membangun pondasi proyek agar rapi, scalable, dan mudah dikembangkan.
 Menentukan seluruh konsep game sebelum mulai coding.
 
 ### Tasks
-- [ ] Vision.md
-- [ ] Gameplay.md
-- [ ] Core Loop.md
-- [ ] Economy.md
-- [ ] Buildings.md
-- [ ] Items.md
-- [ ] Employees.md
-- [ ] UI Flow.md
+- [x] Vision.md
+- [x] Gameplay.md
+- [x] Core Loop.md
+- [x] Economy.md
+- [x] Buildings.md
+- [x] Items.md
+- [x] Employees.md
+- [x] UI Flow.md
 
 ### Deliverables
 Semua gameplay utama sudah terdokumentasi.
