@@ -10,7 +10,7 @@ SimCH Business is designed with a highly modular, decoupled architecture, allowi
 
 - **Game Engine**: Godot Engine 4.3 (or compatible 4.x versions)
 - **Language**: GDScript (with strict static typing)
-- **Target Platforms**: PC / Mobile (Android)
+- **Target Platforms**: PC / Mobile (Android) / Web (HTML5)
 
 ## 📁 Directory Structure
 

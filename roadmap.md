@@ -286,6 +286,7 @@ Testing
 Release Candidate
 - [ ] Export Windows
 - [ ] Export Android
+- [ ] Export Web (HTML5)
 - [ ] Versioning
 
 ---
