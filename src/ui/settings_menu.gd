@@ -9,6 +9,7 @@ signal back_pressed
 @onready var master_slider: HSlider = %MasterSlider
 @onready var music_slider: HSlider = %MusicSlider
 @onready var sfx_slider: HSlider = %SfxSlider
+@onready var save_button: Button = %SaveButton
 @onready var back_button: Button = %BackButton
 
 func _ready() -> void:
@@ -36,6 +37,18 @@ func _ready() -> void:
 	master_slider.value_changed.connect(func(val: float) -> void: _set_bus_volume("Master", val))
 	music_slider.value_changed.connect(func(val: float) -> void: _set_bus_volume("Music", val))
 	sfx_slider.value_changed.connect(func(val: float) -> void: _set_bus_volume("SFX", val))
+	
+	# Hubungkan tombol simpan manual
+	save_button.pressed.connect(func() -> void:
+		var save_mgr: Node = get_node_or_null("/root/SaveManager")
+		if save_mgr:
+			var success: bool = save_mgr.save_game()
+			if success:
+				save_button.text = "Game Saved!"
+				# Tunggu 1.5 detik sebelum mengembalikan teks asli
+				await get_tree().create_timer(1.5).timeout
+				save_button.text = "Save Game"
+	)
 	
 	# Hubungkan tombol kembali
 	back_button.pressed.connect(func() -> void: back_pressed.emit())

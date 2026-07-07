@@ -207,6 +207,21 @@ value = 80.0
 custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
 
+[node name="SaveButton" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/SettingsList"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/focus = SubResource("StyleBoxFlat_button_focus")
+text = "Save Game"
+
+[node name="SpacerButton" type="Control" parent="CenterContainer/PanelContainer/MarginContainer/SettingsList"]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+
 [node name="BackButton" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/SettingsList"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 40)

@@ -119,9 +119,19 @@ func _on_new_game_pressed() -> void:
 func _on_continue_pressed() -> void:
 	EventBus.game_started.emit()
 	change_state(GameState.PLAYING)
+	
+	# Tunggu satu frame agar dunia game ter-inisialisasi
+	await get_tree().process_frame
+	var save_mgr: Node = get_node_or_null("/root/SaveManager")
+	if save_mgr:
+		save_mgr.load_game()
 
 func _on_settings_pressed() -> void:
 	if settings_menu:
+		# Tampilkan tombol Save Game hanya saat sedang dalam permainan
+		var save_btn: Button = settings_menu.get_node_or_null("%SaveButton") as Button
+		if save_btn:
+			save_btn.visible = (current_state == GameState.PLAYING)
 		settings_menu.show()
 	if main_menu:
 		main_menu.hide()

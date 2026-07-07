@@ -179,6 +179,31 @@ func remove_box(item_id: String) -> void:
 	else:
 		print("[WARNING-WORLD] Box barang untuk item '", item_id, "' tidak ditemukan di gudang!")
 
+## Memuat dan menempatkan ulang box barang fisik di slot palet secara instan (untuk load game).
+func load_warehouse_boxes() -> void:
+	# Bersihkan box lama
+	for slot_idx in slot_occupants:
+		var box = slot_occupants[slot_idx]
+		if is_instance_valid(box):
+			box.queue_free()
+	slot_occupants.clear()
+	
+	if not ShopManager or not ShopManager.warehouse_inventory:
+		return
+		
+	var idx: int = 0
+	for item_id in ShopManager.warehouse_inventory.items:
+		var count: int = ShopManager.warehouse_inventory.items[item_id]
+		if count > 0 and idx < 16:
+			var slot_node: Marker2D = pallet_slots_parent.get_node_or_null("Slot" + str(idx)) as Marker2D
+			if slot_node:
+				var box = BOX_ENTITY_SCENE.instantiate()
+				add_child(box)
+				box.global_position = slot_node.global_position
+				box.setup(item_id, slot_node.global_position)
+				slot_occupants[idx] = box
+				idx += 1
+
 func _on_time_tick(_day: int, hour: int, minute: int) -> void:
 	if canvas_modulate:
 		canvas_modulate.color = _get_day_color(hour, minute)

@@ -177,9 +177,9 @@ Blueprint arsitektur proyek selesai.
 ## Sprint 14 — Save & Load
 
 ### Tasks
-- [ ] Save
-- [ ] Load
-- [ ] Auto Save
+- [x] Save
+- [x] Load
+- [x] Auto Save
 
 ---
 
