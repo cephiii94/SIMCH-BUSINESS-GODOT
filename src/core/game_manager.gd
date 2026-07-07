@@ -21,6 +21,7 @@ var _prev_time_scale: float = 1.0
 @onready var warehouse_panel: Control = %WarehousePanel
 @onready var shop_panel: Control = %ShopPanel
 @onready var staff_panel: Control = %StaffPanel
+@onready var reputation_panel: Control = %ReputationPanel
 
 func _ready() -> void:
 	# Hubungkan sinyal dari MainMenu
@@ -37,6 +38,7 @@ func _ready() -> void:
 		hud.warehouse_pressed.connect(_on_warehouse_pressed)
 		hud.shop_pressed.connect(_on_shop_pressed)
 		hud.staff_pressed.connect(_on_staff_pressed)
+		hud.reviews_pressed.connect(_on_reviews_pressed)
 	
 	# Hubungkan sinyal dari SettingsMenu
 	if settings_menu:
@@ -57,6 +59,10 @@ func _ready() -> void:
 	# Hubungkan sinyal dari StaffPanel
 	if staff_panel:
 		staff_panel.close_pressed.connect(_on_staff_close_pressed)
+		
+	# Hubungkan sinyal dari ReputationPanel
+	if reputation_panel:
+		reputation_panel.close_pressed.connect(_on_reviews_close_pressed)
 	
 	# Mulai dengan Main Menu
 	change_state(GameState.MAIN_MENU)
@@ -82,6 +88,8 @@ func change_state(new_state: GameState) -> void:
 				shop_panel.hide()
 			if staff_panel:
 				staff_panel.hide()
+			if reputation_panel:
+				reputation_panel.hide()
 		GameState.PLAYING:
 			if world:
 				world.show()
@@ -99,6 +107,8 @@ func change_state(new_state: GameState) -> void:
 				shop_panel.hide()
 			if staff_panel:
 				staff_panel.hide()
+			if reputation_panel:
+				reputation_panel.hide()
 		GameState.PAUSED:
 			pass
 
@@ -125,6 +135,8 @@ func _on_settings_pressed() -> void:
 		shop_panel.hide()
 	if staff_panel:
 		staff_panel.hide()
+	if reputation_panel:
+		reputation_panel.hide()
 
 func _on_exit_pressed() -> void:
 	EventBus.game_exited.emit()
@@ -210,6 +222,25 @@ func _on_staff_pressed() -> void:
 func _on_staff_close_pressed() -> void:
 	if staff_panel:
 		staff_panel.hide()
+	if hud:
+		hud.show()
+	if TimeManager:
+		TimeManager.time_scale = _prev_time_scale
+
+func _on_reviews_pressed() -> void:
+	if reputation_panel:
+		if TimeManager:
+			_prev_time_scale = TimeManager.time_scale
+			TimeManager.time_scale = 0.0
+		if reputation_panel.has_method("_populate_reviews_list"):
+			reputation_panel._populate_reviews_list()
+		reputation_panel.show()
+	if hud:
+		hud.hide()
+
+func _on_reviews_close_pressed() -> void:
+	if reputation_panel:
+		reputation_panel.hide()
 	if hud:
 		hud.show()
 	if TimeManager:

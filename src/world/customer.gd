@@ -180,6 +180,20 @@ func _shop_current_item() -> void:
 func _process_checkout() -> void:
 	var total_served_revenue: float = 0.0
 	
+	# Cek apakah ada kasir aktif
+	var has_cashier: bool = false
+	var staff_mgr: Node = get_node_or_null("/root/StaffManager")
+	if staff_mgr:
+		for staff in staff_mgr.hired_staff:
+			if staff["role"] == "Cashier":
+				has_cashier = true
+				break
+				
+	# Picu ulasan di ReputationManager
+	var rep_mgr: Node = get_node_or_null("/root/ReputationManager")
+	if rep_mgr:
+		rep_mgr.generate_customer_review(basket.size(), shopping_list.size(), has_cashier)
+		
 	if basket.size() > 0:
 		for item_id in basket:
 			var price: float = ShopManager.get_price(item_id)

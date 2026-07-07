@@ -48,8 +48,19 @@ func _process(delta: float) -> void:
 		if TimeManager.hour >= 8 and TimeManager.hour < 20:
 			customer_spawn_timer -= delta
 			if customer_spawn_timer <= 0.0:
-				# Interval kemunculan acak antara 8 hingga 14 detik
-				customer_spawn_timer = randf_range(8.0, 14.0)
+				# Tentukan interval spawn berdasarkan rating reputasi aktif
+				var current_rating: float = 4.0
+				var rep_mgr: Node = get_node_or_null("/root/ReputationManager")
+				if rep_mgr:
+					current_rating = rep_mgr.rating
+					
+				if current_rating >= 4.0:
+					customer_spawn_timer = randf_range(6.0, 10.0) # Toko ramai
+				elif current_rating >= 2.5:
+					customer_spawn_timer = randf_range(10.0, 15.0) # Toko sedang
+				else:
+					customer_spawn_timer = randf_range(16.0, 22.0) # Toko sepi
+					
 				spawn_customer()
 
 ## Men-spawn pelanggan baru di jalan kiri luar toko.

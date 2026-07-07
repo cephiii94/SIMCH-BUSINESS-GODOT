@@ -28,6 +28,7 @@ EconomyManager="*res://src/autoload/economy_manager.gd"
 DatabaseManager="*res://src/autoload/database_manager.gd"
 ShopManager="*res://src/autoload/shop_manager.gd"
 StaffManager="*res://src/autoload/staff_manager.gd"
+ReputationManager="*res://src/autoload/reputation_manager.gd"
 
 [display]
 
