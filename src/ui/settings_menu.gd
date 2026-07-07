@@ -38,8 +38,20 @@ func _ready() -> void:
 	music_slider.value_changed.connect(func(val: float) -> void: _set_bus_volume("Music", val))
 	sfx_slider.value_changed.connect(func(val: float) -> void: _set_bus_volume("SFX", val))
 	
+	# Putar bip pendek ketika pelepasan geseran volume selesai agar ada umpan balik suara
+	master_slider.drag_ended.connect(func(val_changed: bool) -> void:
+		if val_changed and AudioManager: AudioManager.play_sfx("click")
+	)
+	music_slider.drag_ended.connect(func(val_changed: bool) -> void:
+		if val_changed and AudioManager: AudioManager.play_sfx("click")
+	)
+	sfx_slider.drag_ended.connect(func(val_changed: bool) -> void:
+		if val_changed and AudioManager: AudioManager.play_sfx("click")
+	)
+	
 	# Hubungkan tombol simpan manual
 	save_button.pressed.connect(func() -> void:
+		if AudioManager: AudioManager.play_sfx("click")
 		var save_mgr: Node = get_node_or_null("/root/SaveManager")
 		if save_mgr:
 			var success: bool = save_mgr.save_game()
@@ -51,7 +63,11 @@ func _ready() -> void:
 	)
 	
 	# Hubungkan tombol kembali
-	back_button.pressed.connect(func() -> void: back_pressed.emit())
+	back_button.pressed.connect(func() -> void:
+		if AudioManager: AudioManager.play_sfx("click")
+		back_pressed.emit()
+	)
+
 
 func _on_screen_mode_selected(index: int) -> void:
 	if index == 0:

@@ -36,28 +36,53 @@ func _ready() -> void:
 	
 	# Hubungkan kontrol waktu
 	pause_button.pressed.connect(func() -> void:
+		if AudioManager: AudioManager.play_sfx("click")
 		TimeManager.time_scale = 0.0
 		_update_time_button_states()
 	)
 	play_button.pressed.connect(func() -> void:
+		if AudioManager: AudioManager.play_sfx("click")
 		TimeManager.time_scale = 1.0
 		_update_time_button_states()
 	)
 	fast_forward_button.pressed.connect(func() -> void:
+		if AudioManager: AudioManager.play_sfx("click")
 		TimeManager.time_scale = 3.0
 		_update_time_button_states()
 	)
 	
 	# Hubungkan tombol pengaturan
-	settings_button.pressed.connect(func() -> void: settings_pressed.emit())
+	settings_button.pressed.connect(func() -> void:
+		if AudioManager: AudioManager.play_sfx("click")
+		settings_pressed.emit()
+	)
 	
 	# Hubungkan tombol-tombol panel
-	shop_button.pressed.connect(func() -> void: shop_pressed.emit())
-	warehouse_button.pressed.connect(func() -> void: warehouse_pressed.emit())
-	staff_button.pressed.connect(func() -> void: staff_pressed.emit())
-	reviews_button.pressed.connect(func() -> void: reviews_pressed.emit())
-	stats_button.pressed.connect(func() -> void: stats_pressed.emit())
-	achievements_button.pressed.connect(func() -> void: achievements_pressed.emit())
+	shop_button.pressed.connect(func() -> void:
+		if AudioManager: AudioManager.play_sfx("click")
+		shop_pressed.emit()
+	)
+	warehouse_button.pressed.connect(func() -> void:
+		if AudioManager: AudioManager.play_sfx("click")
+		warehouse_pressed.emit()
+	)
+	staff_button.pressed.connect(func() -> void:
+		if AudioManager: AudioManager.play_sfx("click")
+		staff_pressed.emit()
+	)
+	reviews_button.pressed.connect(func() -> void:
+		if AudioManager: AudioManager.play_sfx("click")
+		reviews_pressed.emit()
+	)
+	stats_button.pressed.connect(func() -> void:
+		if AudioManager: AudioManager.play_sfx("click")
+		stats_pressed.emit()
+	)
+	achievements_button.pressed.connect(func() -> void:
+		if AudioManager: AudioManager.play_sfx("click")
+		achievements_pressed.emit()
+	)
+
 
 	
 	# Hubungkan ReputationManager secara dinamis

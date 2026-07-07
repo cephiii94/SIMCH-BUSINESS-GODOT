@@ -11,12 +11,20 @@ signal close_pressed
 @onready var ok_button: Button = %OkButton
 
 func _ready() -> void:
-	ok_button.pressed.connect(func() -> void: close_pressed.emit())
+	ok_button.pressed.connect(func() -> void:
+		if AudioManager: AudioManager.play_sfx("click")
+		close_pressed.emit()
+	)
 
 ## Memasukkan data peristiwa acak aktif dan menyusun teks berita koran.
 func setup(event_data: Dictionary) -> void:
+	# Putar suara alarm peringatan koran pagi
+	if AudioManager:
+		AudioManager.play_sfx("alert")
+		
 	headline_label.text = event_data.get("name", "Tidak Ada Peristiwa")
 	desc_label.text = event_data.get("desc", "Kehidupan kota berjalan tenang seperti biasa hari ini.")
+
 	
 	var current_day: int = 1
 	var time_mgr: Node = get_node_or_null("/root/TimeManager")

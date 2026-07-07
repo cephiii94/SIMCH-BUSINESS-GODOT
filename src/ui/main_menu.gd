@@ -14,10 +14,23 @@ signal exit_pressed
 @onready var exit_button: Button = %ExitButton
 
 func _ready() -> void:
-	new_game_button.pressed.connect(func() -> void: new_game_pressed.emit())
-	continue_button.pressed.connect(func() -> void: continue_pressed.emit())
-	settings_button.pressed.connect(func() -> void: settings_pressed.emit())
-	exit_button.pressed.connect(func() -> void: exit_pressed.emit())
+	new_game_button.pressed.connect(func() -> void:
+		if AudioManager: AudioManager.play_sfx("click")
+		new_game_pressed.emit()
+	)
+	continue_button.pressed.connect(func() -> void:
+		if AudioManager: AudioManager.play_sfx("click")
+		continue_pressed.emit()
+	)
+	settings_button.pressed.connect(func() -> void:
+		if AudioManager: AudioManager.play_sfx("click")
+		settings_pressed.emit()
+	)
+	exit_button.pressed.connect(func() -> void:
+		if AudioManager: AudioManager.play_sfx("click")
+		exit_pressed.emit()
+	)
+
 	
 	# Nonaktifkan tombol Continue jika tidak ada save file
 	if SaveManager:

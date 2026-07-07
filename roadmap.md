@@ -236,9 +236,10 @@ Blueprint arsitektur proyek selesai.
 ## Sprint 21
 
 Audio
-- [ ] Music
-- [ ] SFX
-- [ ] Ambient
+- [x] Music
+- [x] SFX
+- [x] Ambient
+
 
 ---
 
