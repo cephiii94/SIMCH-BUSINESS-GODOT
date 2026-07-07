@@ -73,6 +73,14 @@ func save_game() -> bool:
 			"reviews": rep_mgr.reviews
 		}
 		
+	# 7. Peristiwa Acak (Random Events)
+	var event_mgr: Node = get_node_or_null("/root/EventManager")
+	if event_mgr:
+		save_data["events"] = {
+			"active_event": event_mgr.active_event,
+			"event_shown_today": event_mgr.event_shown_today
+		}
+		
 	# Tulis ke file
 	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if not file:
@@ -183,6 +191,14 @@ func load_game() -> bool:
 			rep_mgr.rating = rep.get("rating", 4.0)
 			rep_mgr.reviews = rep.get("reviews", [])
 			rep_mgr.rating_changed.emit(rep_mgr.rating)
+			
+	# 7. Muat Peristiwa Acak (Random Events)
+	if save_data.has("events") and save_data["events"] is Dictionary:
+		var event_mgr: Node = get_node_or_null("/root/EventManager")
+		if event_mgr:
+			var ev: Dictionary = save_data["events"]
+			event_mgr.active_event = ev.get("active_event", {})
+			event_mgr.event_shown_today = ev.get("event_shown_today", false)
 			
 	# 7. Muat entitas fisik di peta secara asinkron
 	var scene_root: Node = get_tree().current_scene

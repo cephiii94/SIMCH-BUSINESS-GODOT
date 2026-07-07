@@ -53,6 +53,25 @@ func set_price(item_id: String, price: float) -> void:
 func get_price(item_id: String) -> float:
 	return prices.get(item_id, 0.0)
 
+## Mendapatkan harga beli grosir aktif dengan modifikator peristiwa harian jika ada.
+func get_wholesale_price(item_id: String) -> float:
+	if not DatabaseManager:
+		return 0.0
+		
+	var item_data = DatabaseManager.get_item(item_id)
+	if not item_data:
+		return 0.0
+		
+	var base_price: float = item_data.wholesale_price
+	
+	var event_mgr: Node = get_node_or_null("/root/EventManager")
+	if event_mgr and event_mgr.active_event.size() > 0:
+		var modifier_key: String = item_id + "_wholesale_mult"
+		if event_mgr.active_event.has(modifier_key):
+			return base_price * event_mgr.active_event[modifier_key]
+			
+	return base_price
+
 ## Membangun rak baru. Biaya awal $250.
 func build_rack(item_id: String) -> bool:
 	if racks.size() >= 6:

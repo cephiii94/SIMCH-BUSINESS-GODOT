@@ -195,26 +195,22 @@ Blueprint arsitektur proyek selesai.
 
 ## Sprint 16 — Business Expansion
 
-- [ ] Tambah jenis bisnis
-- [ ] Upgrade bisnis
-- [ ] Profit Calculation
+- [x] Skipped (Dilewati untuk fokus 1 toko tunggal)
 
 ---
 
 ## Sprint 17 — Logistics
 
-- [ ] Kendaraan
-- [ ] Delivery
-- [ ] Route
+- [x] Skipped (Dilewati untuk fokus 1 toko tunggal)
 
 ---
 
 ## Sprint 18 — Random Events
 
-- [ ] Event System
-- [ ] Bonus
-- [ ] Disaster
-- [ ] Economy Changes
+- [x] Event System
+- [x] Bonus
+- [x] Disaster
+- [x] Economy Changes
 
 ---
 

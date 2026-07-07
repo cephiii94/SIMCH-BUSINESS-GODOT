@@ -1,7 +1,7 @@
 class_name EmployeeEntity
 extends Node2D
 
-## Mengatur visualisasi fisik karyawan, pergerakan navigasi otonom, dan kecerdasan buatan tugas kasir/stocker.
+## Mengatur visualisasi fisik karyawan, pergerakan navigasi otonom, dan kecerdasan buatan tugas kasir/stocker dengan dukungan modifikator peristiwa harian.
 
 @onready var visual_rect: PanelContainer = %VisualRect
 @onready var face_label: Label = %FaceLabel
@@ -58,6 +58,13 @@ func _setup_visual() -> void:
 	if action_label:
 		action_label.text = staff_name + " (Siaga)"
 
+func _get_current_speed() -> float:
+	var speed = base_speed * speed_mult
+	var event_mgr: Node = get_node_or_null("/root/EventManager")
+	if event_mgr and event_mgr.active_event.size() > 0:
+		speed *= event_mgr.active_event.get("staff_speed_mult", 1.0)
+	return speed
+
 func _process(delta: float) -> void:
 	# Jika game di-pause (time_scale == 0), jangan bergerak
 	if TimeManager and TimeManager.time_scale == 0.0:
@@ -80,7 +87,7 @@ func _process_cashier_ai(delta: float) -> void:
 			
 	if global_position.distance_to(cashier_target) > 5.0:
 		var dir: Vector2 = (cashier_target - global_position).normalized()
-		global_position += dir * base_speed * speed_mult * delta
+		global_position += dir * _get_current_speed() * delta
 		if action_label:
 			action_label.text = staff_name + " (Ke Kasir)"
 	else:
@@ -120,7 +127,7 @@ func _process_stocker_ai(delta: float) -> void:
 				var home_pos: Vector2 = Vector2(-300, 50)
 				if global_position.distance_to(home_pos) > 8.0:
 					var dir: Vector2 = (home_pos - global_position).normalized()
-					global_position += dir * base_speed * speed_mult * delta
+					global_position += dir * _get_current_speed() * delta
 				else:
 					if action_label:
 						action_label.text = staff_name + " (Siaga)"
@@ -143,7 +150,7 @@ func _process_stocker_ai(delta: float) -> void:
 						
 			if global_position.distance_to(target_pos) > 6.0:
 				var dir: Vector2 = (target_pos - global_position).normalized()
-				global_position += dir * base_speed * speed_mult * delta
+				global_position += dir * _get_current_speed() * delta
 			else:
 				state = "RESTOCKING"
 				restock_delay_timer = 0.8 # Jeda 0.8 detik mengambil barang
@@ -172,7 +179,7 @@ func _process_stocker_ai(delta: float) -> void:
 						
 			if global_position.distance_to(target_pos) > 6.0:
 				var dir: Vector2 = (target_pos - global_position).normalized()
-				global_position += dir * base_speed * speed_mult * delta
+				global_position += dir * _get_current_speed() * delta
 			else:
 				# Selesai menata barang, kembali patroli
 				state = "IDLE"

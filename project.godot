@@ -29,6 +29,7 @@ DatabaseManager="*res://src/autoload/database_manager.gd"
 ShopManager="*res://src/autoload/shop_manager.gd"
 StaffManager="*res://src/autoload/staff_manager.gd"
 ReputationManager="*res://src/autoload/reputation_manager.gd"
+EventManager="*res://src/autoload/event_manager.gd"
 
 [display]
 

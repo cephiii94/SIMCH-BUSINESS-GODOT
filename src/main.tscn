@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://src/core/game_manager.gd" id="1_game_manager"]
 [ext_resource type="PackedScene" path="res://src/world/world.tscn" id="2_world"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://src/ui/shop_panel.tscn" id="8_shop_panel"]
 [ext_resource type="PackedScene" path="res://src/ui/staff_panel.tscn" id="9_staff_panel"]
 [ext_resource type="PackedScene" path="res://src/ui/reputation_panel.tscn" id="10_reputation_panel"]
+[ext_resource type="PackedScene" path="res://src/ui/event_popup.tscn" id="11_event_popup"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1_game_manager")
@@ -56,6 +57,11 @@ visible = false
 layout_mode = 1
 
 [node name="ReputationPanel" parent="UI" instance=ExtResource("10_reputation_panel")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="EventPopup" parent="UI" instance=ExtResource("11_event_popup")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1

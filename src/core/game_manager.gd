@@ -22,6 +22,7 @@ var _prev_time_scale: float = 1.0
 @onready var shop_panel: Control = %ShopPanel
 @onready var staff_panel: Control = %StaffPanel
 @onready var reputation_panel: Control = %ReputationPanel
+@onready var event_popup: Control = %EventPopup
 
 func _ready() -> void:
 	# Hubungkan sinyal dari MainMenu
@@ -63,6 +64,10 @@ func _ready() -> void:
 	# Hubungkan sinyal dari ReputationPanel
 	if reputation_panel:
 		reputation_panel.close_pressed.connect(_on_reviews_close_pressed)
+		
+	# Hubungkan sinyal dari EventPopup
+	if event_popup:
+		event_popup.close_pressed.connect(_on_event_close_pressed)
 	
 	# Mulai dengan Main Menu
 	change_state(GameState.MAIN_MENU)
@@ -90,6 +95,8 @@ func change_state(new_state: GameState) -> void:
 				staff_panel.hide()
 			if reputation_panel:
 				reputation_panel.hide()
+			if event_popup:
+				event_popup.hide()
 		GameState.PLAYING:
 			if world:
 				world.show()
@@ -109,6 +116,8 @@ func change_state(new_state: GameState) -> void:
 				staff_panel.hide()
 			if reputation_panel:
 				reputation_panel.hide()
+			if event_popup:
+				event_popup.hide()
 		GameState.PAUSED:
 			pass
 
@@ -147,6 +156,8 @@ func _on_settings_pressed() -> void:
 		staff_panel.hide()
 	if reputation_panel:
 		reputation_panel.hide()
+	if event_popup:
+		event_popup.hide()
 
 func _on_exit_pressed() -> void:
 	EventBus.game_exited.emit()
@@ -251,6 +262,24 @@ func _on_reviews_pressed() -> void:
 func _on_reviews_close_pressed() -> void:
 	if reputation_panel:
 		reputation_panel.hide()
+	if hud:
+		hud.show()
+	if TimeManager:
+		TimeManager.time_scale = _prev_time_scale
+
+func _show_daily_event_popup(event_data: Dictionary) -> void:
+	if event_popup:
+		if TimeManager:
+			_prev_time_scale = TimeManager.time_scale
+			TimeManager.time_scale = 0.0
+		event_popup.setup(event_data)
+		event_popup.show()
+	if hud:
+		hud.hide()
+
+func _on_event_close_pressed() -> void:
+	if event_popup:
+		event_popup.hide()
 	if hud:
 		hud.show()
 	if TimeManager:

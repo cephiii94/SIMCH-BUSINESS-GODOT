@@ -1,7 +1,7 @@
 class_name WarehousePanel
 extends Control
 
-## Mengatur UI panel Manajemen Gudang (Warehouse/Inventory Panel).
+## Mengatur UI panel Manajemen Gudang (Warehouse/Inventory Panel) dengan dukungan harga dinamis.
 
 signal close_pressed
 
@@ -30,6 +30,13 @@ func _ready() -> void:
 	# Hubungkan tombol-tombol
 	upgrade_button.pressed.connect(_on_upgrade_pressed)
 	close_button.pressed.connect(func() -> void: close_pressed.emit())
+	
+	# Hubungkan sinyal EventManager jika ada untuk me-refresh daftar saat event berubah
+	var event_mgr: Node = get_node_or_null("/root/EventManager")
+	if event_mgr:
+		event_mgr.event_triggered.connect(func(_data: Dictionary) -> void:
+			_populate_items_list()
+		)
 	
 	# Render daftar item
 	_populate_items_list()
@@ -81,11 +88,24 @@ func _populate_items_list() -> void:
 		lbl_name.text = item_ref.name
 		lbl_name.size_flags_horizontal = SIZE_EXPAND_FILL
 		
+		# Hitung harga grosir aktif (dipengaruhi event acak)
+		var price_per_unit: float = item_ref.wholesale_price
+		if ShopManager:
+			price_per_unit = ShopManager.get_wholesale_price(item_ref.id)
+			
+		var box_cost: float = price_per_unit * item_ref.box_size
+		
 		# Kolom Info Volume dan Ukuran Box
 		var lbl_info: Label = Label.new()
-		lbl_info.text = "Vol: %d | 1 Box: %d u" % [item_ref.volume, item_ref.box_size]
-		lbl_info.custom_minimum_size = Vector2(150, 0)
+		lbl_info.text = "Vol: %d | Box: %d u | Harga: $%.2f" % [item_ref.volume, item_ref.box_size, box_cost]
+		lbl_info.custom_minimum_size = Vector2(230, 0)
 		lbl_info.modulate = Color(0.5, 0.55, 0.6, 1.0)
+		
+		# Jika harga dimodifikasi oleh event (misal lebih mahal/murah), beri warna teks info
+		if price_per_unit > item_ref.wholesale_price:
+			lbl_info.modulate = Color(0.9, 0.5, 0.5, 1.0) # Merah (Lebih mahal)
+		elif price_per_unit < item_ref.wholesale_price:
+			lbl_info.modulate = Color(0.4, 0.8, 0.6, 1.0) # Hijau (Lebih murah)
 		
 		# Kolom Jumlah Stok
 		var lbl_stock: Label = Label.new()
@@ -98,7 +118,7 @@ func _populate_items_list() -> void:
 				lbl_stock.text = "Stok: %d u" % new_count
 		)
 		
-		# Tombol Kurang Stok
+		# Tombol Kurang Stok (Buang barang secara visual dan data, tidak refund)
 		var btn_sub: Button = Button.new()
 		btn_sub.text = "-1 Box"
 		btn_sub.custom_minimum_size = Vector2(80, 32)
@@ -110,13 +130,20 @@ func _populate_items_list() -> void:
 					world_node.remove_box(item_ref.id)
 		)
 		
-		# Tombol Tambah Stok
+		# Tombol Tambah Stok (Beli barang dari supplier)
 		var btn_add: Button = Button.new()
 		btn_add.text = "+1 Box"
 		btn_add.custom_minimum_size = Vector2(80, 32)
 		btn_add.pressed.connect(func() -> void:
+			# Cek ketersediaan uang kas sebelum membeli
+			if EconomyManager and EconomyManager.cash < box_cost:
+				print("[WARNING] Kas tidak cukup untuk membeli box barang!")
+				return
+				
 			var success: bool = inventory.add_item(item_ref.id, item_ref.box_size)
 			if success:
+				if EconomyManager:
+					EconomyManager.record_expense(box_cost, EconomyManager.ExpenseType.COGS)
 				var world_node = _get_world()
 				if world_node and world_node.has_method("spawn_box"):
 					world_node.spawn_box(item_ref.id)

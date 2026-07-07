@@ -60,13 +60,20 @@ func _process(delta: float) -> void:
 				if rep_mgr:
 					current_rating = rep_mgr.rating
 					
+				var base_spawn_interval: float = 12.0
 				if current_rating >= 4.0:
-					customer_spawn_timer = randf_range(6.0, 10.0) # Toko ramai
+					base_spawn_interval = randf_range(6.0, 10.0) # Toko ramai
 				elif current_rating >= 2.5:
-					customer_spawn_timer = randf_range(10.0, 15.0) # Toko sedang
+					base_spawn_interval = randf_range(10.0, 15.0) # Toko sedang
 				else:
-					customer_spawn_timer = randf_range(16.0, 22.0) # Toko sepi
+					base_spawn_interval = randf_range(16.0, 22.0) # Toko sepi
 					
+				# Modifikator peristiwa acak (Random Event)
+				var event_mgr: Node = get_node_or_null("/root/EventManager")
+				if event_mgr and event_mgr.active_event.size() > 0:
+					base_spawn_interval *= event_mgr.active_event.get("customer_spawn_mult", 1.0)
+					
+				customer_spawn_timer = base_spawn_interval
 				spawn_customer()
 
 ## Men-spawn pelanggan baru di jalan kiri luar toko.
@@ -230,6 +237,15 @@ func sync_racks() -> void:
 func _on_time_tick(_day: int, hour: int, minute: int) -> void:
 	if canvas_modulate:
 		canvas_modulate.color = _get_day_color(hour, minute)
+		
+	# Cek pemicuan koran pagi pukul 08:00
+	if hour == 8 and minute == 0:
+		var event_mgr: Node = get_node_or_null("/root/EventManager")
+		if event_mgr and event_mgr.active_event.size() > 0 and not event_mgr.event_shown_today:
+			event_mgr.event_shown_today = true
+			var scene_root: Node = get_tree().current_scene
+			if scene_root and scene_root.has_method("_show_daily_event_popup"):
+				scene_root._show_daily_event_popup(event_mgr.active_event)
 
 func _get_day_color(h: int, m: int) -> Color:
 	var time_val: float = h + m / 60.0
