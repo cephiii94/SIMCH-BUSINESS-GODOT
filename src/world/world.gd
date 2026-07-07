@@ -40,6 +40,12 @@ func _ready() -> void:
 	if staff_mgr:
 		staff_mgr.staff_list_changed.connect(sync_employees)
 		sync_employees()
+		
+	# Hubungkan sinyal perubahan rak toko ritel
+	var shop_mgr: Node = get_node_or_null("/root/ShopManager")
+	if shop_mgr:
+		shop_mgr.racks_changed.connect(sync_racks)
+		sync_racks()
 
 func _process(delta: float) -> void:
 	# Jalankan pemijahan pelanggan berkala jika game sedang berjalan (tidak pause)
@@ -203,6 +209,23 @@ func load_warehouse_boxes() -> void:
 				box.setup(item_id, slot_node.global_position)
 				slot_occupants[idx] = box
 				idx += 1
+
+## Mensinkronisasikan penanda koordinat rak ritel otonom untuk navigasi AI.
+func sync_racks() -> void:
+	var rack_slots: Node2D = get_node_or_null("RackSlots") as Node2D
+	if not rack_slots or not ShopManager:
+		return
+		
+	# Bersihkan penanda lama
+	for child in rack_slots.get_children():
+		child.queue_free()
+		
+	# Buat ulang penanda otonom Marker2D sesuai koordinat dinamis dari GameMap
+	for i in range(ShopManager.racks.size()):
+		var marker: Marker2D = Marker2D.new()
+		marker.name = "Slot" + str(i)
+		marker.global_position = GameMap.get_rack_position(i)
+		rack_slots.add_child(marker)
 
 func _on_time_tick(_day: int, hour: int, minute: int) -> void:
 	if canvas_modulate:

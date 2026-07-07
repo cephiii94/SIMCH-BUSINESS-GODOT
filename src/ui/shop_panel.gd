@@ -1,7 +1,7 @@
 class_name ShopPanel
 extends Control
 
-## Mengatur UI panel Manajemen Toko Ritel (Shop Panel).
+## Mengatur UI panel Manajemen Toko Ritel (Shop Panel) dengan dukungan Upgrade, Destroy, dan Build.
 
 signal close_pressed
 
@@ -11,6 +11,11 @@ signal close_pressed
 func _ready() -> void:
 	close_button.pressed.connect(func() -> void: close_pressed.emit())
 	
+	# Hubungkan reaktif jika rak berubah
+	var shop_mgr: Node = get_node_or_null("/root/ShopManager")
+	if shop_mgr:
+		shop_mgr.racks_changed.connect(_populate_racks_list)
+		
 	# Render daftar rak
 	_populate_racks_list()
 
@@ -22,6 +27,7 @@ func _populate_racks_list() -> void:
 	if not ShopManager or not DatabaseManager:
 		return
 		
+	# 1. Render seluruh rak aktif
 	for i in range(ShopManager.racks.size()):
 		var rack_idx: int = i
 		var rack: Dictionary = ShopManager.racks[rack_idx]
@@ -100,14 +106,14 @@ func _populate_racks_list() -> void:
 		price_hbox.add_child(price_slider)
 		rack_box.add_child(price_hbox)
 		
-		# HBox Baris 3: Tombol Aksi Restock dan Jual
+		# HBox Baris 3: Tombol Aksi Restock, Jual, Upgrade, dan Hancurkan
 		var actions_hbox: HBoxContainer = HBoxContainer.new()
 		actions_hbox.add_theme_constant_override("separation", 8)
 		actions_hbox.alignment = BoxContainer.ALIGNMENT_END
 		
 		var btn_restock: Button = Button.new()
-		btn_restock.text = "Restock (Gudang)"
-		btn_restock.custom_minimum_size = Vector2(140, 32)
+		btn_restock.text = "Restock"
+		btn_restock.custom_minimum_size = Vector2(80, 32)
 		btn_restock.pressed.connect(func() -> void:
 			var success: bool = ShopManager.restock_rack(rack_idx)
 			if success:
@@ -116,8 +122,8 @@ func _populate_racks_list() -> void:
 		)
 		
 		var btn_sell: Button = Button.new()
-		btn_sell.text = "Jual 1 Unit"
-		btn_sell.custom_minimum_size = Vector2(100, 32)
+		btn_sell.text = "Jual 1"
+		btn_sell.custom_minimum_size = Vector2(70, 32)
 		btn_sell.pressed.connect(func() -> void:
 			var success: bool = ShopManager.sell_unit(rack_idx)
 			if success:
@@ -125,13 +131,74 @@ func _populate_racks_list() -> void:
 				stock_bar.value = rack["current_stock"]
 		)
 		
+		var btn_upgrade: Button = Button.new()
+		var base_cap = 10 if rack["item_id"].begins_with("clothing") else 15
+		if rack["max_capacity"] >= base_cap * 4:
+			btn_upgrade.text = "Max Level"
+			btn_upgrade.disabled = true
+		else:
+			var cost_up = 150 if rack["max_capacity"] < base_cap * 2 else 300
+			btn_upgrade.text = "Upgrade ($%d)" % cost_up
+			btn_upgrade.pressed.connect(func() -> void:
+				ShopManager.upgrade_rack(rack_idx)
+			)
+		btn_upgrade.custom_minimum_size = Vector2(110, 32)
+		
+		var btn_destroy: Button = Button.new()
+		btn_destroy.text = "Hancurkan (+$100)"
+		btn_destroy.custom_minimum_size = Vector2(130, 32)
+		btn_destroy.pressed.connect(func() -> void:
+			ShopManager.destroy_rack(rack_idx)
+		)
+		
 		actions_hbox.add_child(btn_restock)
 		actions_hbox.add_child(btn_sell)
+		actions_hbox.add_child(btn_upgrade)
+		# Jangan biarkan pemain menghancurkan 3 rak awal jika itu satu-satunya rak, agar tidak softlock
+		if ShopManager.racks.size() > 1:
+			actions_hbox.add_child(btn_destroy)
+			
 		rack_box.add_child(actions_hbox)
 		
 		# Divider pembatas antar rak
-		if rack_idx < ShopManager.racks.size() - 1:
+		if rack_idx < ShopManager.racks.size() - 1 or ShopManager.racks.size() < 6:
 			var separator: HSeparator = HSeparator.new()
 			rack_box.add_child(separator)
 			
 		racks_container.add_child(rack_box)
+		
+	# 2. Tampilkan baris "Bangun Rak Baru" jika jumlah rak aktif kurang dari 6
+	if ShopManager.racks.size() < 6:
+		var build_box: VBoxContainer = VBoxContainer.new()
+		build_box.add_theme_constant_override("separation", 8)
+		
+		var build_hbox: HBoxContainer = HBoxContainer.new()
+		build_hbox.add_theme_constant_override("separation", 12)
+		
+		var lbl_build: Label = Label.new()
+		lbl_build.text = "Slot Kosong (Slot %d/6)" % [ShopManager.racks.size() + 1]
+		lbl_build.size_flags_horizontal = SIZE_EXPAND_FILL
+		lbl_build.add_theme_font_size_override("font_size", 15)
+		lbl_build.modulate = Color(0.5, 0.55, 0.6)
+		
+		# OptionButton untuk memilih produk dari database
+		var opt_items: OptionButton = OptionButton.new()
+		opt_items.custom_minimum_size = Vector2(200, 32)
+		var db_items = DatabaseManager.get_all_items()
+		for item in db_items:
+			opt_items.add_item(item.name)
+			
+		var btn_build: Button = Button.new()
+		btn_build.text = "Bangun Rak ($250)"
+		btn_build.custom_minimum_size = Vector2(160, 32)
+		btn_build.pressed.connect(func() -> void:
+			if opt_items.selected != -1:
+				var item_id = db_items[opt_items.selected].id
+				ShopManager.build_rack(item_id)
+		)
+		
+		build_hbox.add_child(lbl_build)
+		build_hbox.add_child(opt_items)
+		build_hbox.add_child(btn_build)
+		build_box.add_child(build_hbox)
+		racks_container.add_child(build_box)

@@ -187,9 +187,9 @@ Blueprint arsitektur proyek selesai.
 
 ## Sprint 15 — Building System
 
-- [ ] Bangun Gedung
-- [ ] Upgrade Gedung
-- [ ] Destroy
+- [x] Bangun Gedung
+- [x] Upgrade Gedung
+- [x] Destroy
 
 ---
 
