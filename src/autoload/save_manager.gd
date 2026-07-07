@@ -81,8 +81,21 @@ func save_game() -> bool:
 			"event_shown_today": event_mgr.event_shown_today
 		}
 		
+	# 8. Pencapaian (Achievements)
+	var ach_mgr: Node = get_node_or_null("/root/AchievementManager")
+	if ach_mgr:
+		var unlocked_list: Array = []
+		for id in ach_mgr.achievements:
+			if ach_mgr.achievements[id]["unlocked"]:
+				unlocked_list.append(id)
+		save_data["achievements"] = {
+			"total_served": ach_mgr.total_served,
+			"unlocked": unlocked_list
+		}
+		
 	# Tulis ke file
 	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+
 	if not file:
 		print("[ERROR-SAVE] Gagal membuka file save game untuk penulisan!")
 		return false
@@ -199,6 +212,28 @@ func load_game() -> bool:
 			var ev: Dictionary = save_data["events"]
 			event_mgr.active_event = ev.get("active_event", {})
 			event_mgr.event_shown_today = ev.get("event_shown_today", false)
+			
+	# 8. Muat Pencapaian (Achievements)
+	if save_data.has("achievements") and save_data["achievements"] is Dictionary:
+		var ach_mgr: Node = get_node_or_null("/root/AchievementManager")
+		if ach_mgr:
+			var ach: Dictionary = save_data["achievements"]
+			ach_mgr.total_served = ach.get("total_served", 0)
+			
+			var unlocked_loaded: Array = ach.get("unlocked", [])
+			# Reset semua pencapaian menjadi belum terbuka terlebih dahulu
+			for id in ach_mgr.achievements:
+				ach_mgr.achievements[id]["unlocked"] = false
+				
+			# Atur status terbuka dari data yang dimuat
+			for id in unlocked_loaded:
+				if ach_mgr.achievements.has(id):
+					ach_mgr.achievements[id]["unlocked"] = true
+			
+			# Sinkronisasi & verifikasi awal tanpa memberikan reward ulang
+			# karena status cash, reputasi, dsb sudah termuat dari data aslinya
+			ach_mgr.check_all_achievements()
+
 			
 	# 7. Muat entitas fisik di peta secara asinkron
 	var scene_root: Node = get_tree().current_scene

@@ -23,6 +23,8 @@ var _prev_time_scale: float = 1.0
 @onready var staff_panel: Control = %StaffPanel
 @onready var reputation_panel: Control = %ReputationPanel
 @onready var event_popup: Control = %EventPopup
+@onready var achievement_panel: Control = %AchievementPanel
+
 
 func _ready() -> void:
 	# Hubungkan sinyal dari MainMenu
@@ -40,6 +42,8 @@ func _ready() -> void:
 		hud.shop_pressed.connect(_on_shop_pressed)
 		hud.staff_pressed.connect(_on_staff_pressed)
 		hud.reviews_pressed.connect(_on_reviews_pressed)
+		hud.achievements_pressed.connect(_on_achievements_pressed)
+
 	
 	# Hubungkan sinyal dari SettingsMenu
 	if settings_menu:
@@ -68,9 +72,46 @@ func _ready() -> void:
 	# Hubungkan sinyal dari EventPopup
 	if event_popup:
 		event_popup.close_pressed.connect(_on_event_close_pressed)
+		
+	# Hubungkan sinyal dari AchievementPanel
+	if achievement_panel:
+		achievement_panel.close_pressed.connect(_on_achievements_close_pressed)
+		
+	# Hubungkan notifikasi pencapaian dari EventBus
+	EventBus.achievement_unlocked.connect(_on_achievement_unlocked)
+
 	
 	# Mulai dengan Main Menu
 	change_state(GameState.MAIN_MENU)
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+		# Cari modal mana yang aktif dan tutup modal tersebut
+		if settings_menu and settings_menu.visible:
+			_on_settings_back_pressed()
+			get_viewport().set_input_as_handled()
+		elif stats_panel and stats_panel.visible:
+			_on_stats_close_pressed()
+			get_viewport().set_input_as_handled()
+		elif warehouse_panel and warehouse_panel.visible:
+			_on_warehouse_close_pressed()
+			get_viewport().set_input_as_handled()
+		elif shop_panel and shop_panel.visible:
+			_on_shop_close_pressed()
+			get_viewport().set_input_as_handled()
+		elif staff_panel and staff_panel.visible:
+			_on_staff_close_pressed()
+			get_viewport().set_input_as_handled()
+		elif reputation_panel and reputation_panel.visible:
+			_on_reviews_close_pressed()
+			get_viewport().set_input_as_handled()
+		elif achievement_panel and achievement_panel.visible:
+			_on_achievements_close_pressed()
+			get_viewport().set_input_as_handled()
+		elif event_popup and event_popup.visible:
+			_on_event_close_pressed()
+			get_viewport().set_input_as_handled()
+
 
 ## Mengubah state game dan menyesuaikan visibilitas node terkait.
 func change_state(new_state: GameState) -> void:
@@ -97,6 +138,9 @@ func change_state(new_state: GameState) -> void:
 				reputation_panel.hide()
 			if event_popup:
 				event_popup.hide()
+			if achievement_panel:
+				achievement_panel.hide()
+
 		GameState.PLAYING:
 			if world:
 				world.show()
@@ -118,6 +162,9 @@ func change_state(new_state: GameState) -> void:
 				reputation_panel.hide()
 			if event_popup:
 				event_popup.hide()
+			if achievement_panel:
+				achievement_panel.hide()
+
 		GameState.PAUSED:
 			pass
 
@@ -158,6 +205,9 @@ func _on_settings_pressed() -> void:
 		reputation_panel.hide()
 	if event_popup:
 		event_popup.hide()
+	if achievement_panel:
+		achievement_panel.hide()
+
 
 func _on_exit_pressed() -> void:
 	EventBus.game_exited.emit()
@@ -284,3 +334,32 @@ func _on_event_close_pressed() -> void:
 		hud.show()
 	if TimeManager:
 		TimeManager.time_scale = _prev_time_scale
+
+func _on_achievements_pressed() -> void:
+	if achievement_panel:
+		if TimeManager:
+			_prev_time_scale = TimeManager.time_scale
+			TimeManager.time_scale = 0.0
+		# Refresh data pencapaian sebelum ditampilkan
+		if achievement_panel.has_method("populate_achievements"):
+			achievement_panel.populate_achievements()
+		achievement_panel.show()
+	if hud:
+		hud.hide()
+
+func _on_achievements_close_pressed() -> void:
+	if achievement_panel:
+		achievement_panel.hide()
+	if hud:
+		hud.show()
+	if TimeManager:
+		TimeManager.time_scale = _prev_time_scale
+
+const ACHIEVEMENT_NOTIFICATION_SCENE: PackedScene = preload("res://src/ui/achievement_notification.tscn")
+
+func _on_achievement_unlocked(_id: String, title: String, reward_desc: String) -> void:
+	if ui and ACHIEVEMENT_NOTIFICATION_SCENE:
+		var notif = ACHIEVEMENT_NOTIFICATION_SCENE.instantiate()
+		ui.add_child(notif)
+		notif.setup(title, reward_desc)
+

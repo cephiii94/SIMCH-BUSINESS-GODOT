@@ -78,3 +78,9 @@ func generate_customer_review(basket_size: int, shopping_list_size: int, has_cas
 		
 	var comment: String = comments[randi() % comments.size()]
 	add_review(stars, comment)
+	
+## Menambahkan bonus rating reputasi secara instan (misal untuk reward pencapaian).
+func add_reputation_bonus(amount: float) -> void:
+	rating = clamp(rating + amount, 1.0, 5.0)
+	rating_changed.emit(rating)
+

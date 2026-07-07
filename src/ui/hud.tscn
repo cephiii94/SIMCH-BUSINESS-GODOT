@@ -231,7 +231,19 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/focus = SubResource("StyleBoxFlat_btn_focus")
 text = "Stats"
 
+[node name="AchievementsButton" type="Button" parent="PanelContainer/MarginContainer/HBoxContainer/PanelButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/focus = SubResource("StyleBoxFlat_btn_focus")
+text = "🏆 Achieve"
+
 [node name="SpacerButton" type="Control" parent="PanelContainer/MarginContainer/HBoxContainer/PanelButtons"]
+
 custom_minimum_size = Vector2(4, 0)
 layout_mode = 2
 

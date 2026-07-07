@@ -216,8 +216,9 @@ Blueprint arsitektur proyek selesai.
 
 ## Sprint 19 — Achievement
 
-- [ ] Achievement
-- [ ] Unlock Reward
+- [x] Achievement
+- [x] Unlock Reward
+
 
 ---
 

@@ -9,6 +9,8 @@ signal warehouse_pressed
 signal shop_pressed
 signal staff_pressed
 signal reviews_pressed
+signal achievements_pressed
+
 
 @onready var time_label: Label = %TimeLabel
 @onready var cash_label: Label = %CashLabel
@@ -24,6 +26,8 @@ signal reviews_pressed
 @onready var staff_button: Button = %StaffButton
 @onready var reviews_button: Button = %ReviewsButton
 @onready var stats_button: Button = %StatsButton
+@onready var achievements_button: Button = %AchievementsButton
+
 
 func _ready() -> void:
 	# Hubungkan sinyal EventBus
@@ -53,6 +57,8 @@ func _ready() -> void:
 	staff_button.pressed.connect(func() -> void: staff_pressed.emit())
 	reviews_button.pressed.connect(func() -> void: reviews_pressed.emit())
 	stats_button.pressed.connect(func() -> void: stats_pressed.emit())
+	achievements_button.pressed.connect(func() -> void: achievements_pressed.emit())
+
 	
 	# Hubungkan ReputationManager secara dinamis
 	var rep_mgr: Node = get_node_or_null("/root/ReputationManager")
@@ -89,6 +95,8 @@ func _update_time_button_states() -> void:
 	pause_button.release_focus()
 	play_button.release_focus()
 	fast_forward_button.release_focus()
+	achievements_button.release_focus()
+
 	
 	# Modulasi visual sederhana untuk menandakan tombol mana yang sedang aktif
 	pause_button.modulate = Color(1.5, 1.5, 1.5) if TimeManager.time_scale == 0.0 else Color(1, 1, 1)

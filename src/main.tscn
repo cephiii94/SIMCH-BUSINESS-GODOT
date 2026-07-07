@@ -11,6 +11,8 @@
 [ext_resource type="PackedScene" path="res://src/ui/staff_panel.tscn" id="9_staff_panel"]
 [ext_resource type="PackedScene" path="res://src/ui/reputation_panel.tscn" id="10_reputation_panel"]
 [ext_resource type="PackedScene" path="res://src/ui/event_popup.tscn" id="11_event_popup"]
+[ext_resource type="PackedScene" path="res://src/ui/achievement_panel.tscn" id="12_achievement_panel"]
+
 
 [node name="Main" type="Node"]
 script = ExtResource("1_game_manager")
@@ -65,3 +67,9 @@ layout_mode = 1
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
+
+[node name="AchievementPanel" parent="UI" instance=ExtResource("12_achievement_panel")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+

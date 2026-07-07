@@ -18,3 +18,6 @@ signal game_exited
 
 # Sinyal Laporan Keuangan (Sprint 8)
 signal daily_report_generated(report: Dictionary)
+
+# Sinyal Pencapaian / Achievement (Sprint 19)
+signal achievement_unlocked(achievement_id: String, title: String, reward_desc: String)
