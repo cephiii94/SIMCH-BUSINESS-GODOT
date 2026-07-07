@@ -64,7 +64,7 @@ func play_sfx(sfx_name: String) -> void:
 		player.play()
 	else:
 		# FALLBACK: Hasilkan gelombang suara bip retro dalam memori
-		var stream: AudioStreamWav = generate_beep_wave(sfx_name)
+		var stream: AudioStreamWAV = generate_beep_wave(sfx_name)
 		if stream:
 			player.stream = stream
 			player.play()
@@ -72,7 +72,7 @@ func play_sfx(sfx_name: String) -> void:
 			player.queue_free()
 
 ## Mensintesis data gelombang audio sinus biner (PCM 16-bit) untuk SFX retro 8-bit.
-func generate_beep_wave(type: String) -> AudioStreamWav:
+func generate_beep_wave(type: String) -> AudioStreamWAV:
 	var sample_rate: int = 44100
 	var data: PackedByteArray = PackedByteArray()
 	
@@ -170,11 +170,12 @@ func generate_beep_wave(type: String) -> AudioStreamWav:
 		_:
 			return null
 			
-	var stream: AudioStreamWav = AudioStreamWav.new()
-	stream.format = AudioStreamWav.FORMAT_16_BITS
+	var stream: AudioStreamWAV = AudioStreamWAV.new()
+	stream.format = AudioStreamWAV.FORMAT_16_BITS
 	stream.mix_rate = sample_rate
 	stream.stereo = false
 	stream.data = data
+	stream.loop_mode = AudioStreamWAV.LOOP_DISABLED
 	return stream
 
 # --- Event Listeners ---
@@ -184,3 +185,4 @@ func _on_customer_served(_revenue: float) -> void:
 
 func _on_achievement_unlocked(_id: String, _title: String, _reward_desc: String) -> void:
 	play_sfx("unlock")
+

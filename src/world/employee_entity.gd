@@ -19,12 +19,16 @@ var target_item_id: String = ""
 var restock_delay_timer: float = 0.0
 
 var _world_node: Node2D = null
+var _prev_position: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	# Hubungkan referensi World
 	var scene_root: Node = get_tree().current_scene
 	if scene_root:
 		_world_node = scene_root.get_node_or_null("World") as Node2D
+		
+	_prev_position = global_position
+
 		
 	# Setup visual warna baju dan ikon peran
 	_setup_visual()
@@ -81,12 +85,37 @@ func _process(delta: float) -> void:
 		
 	# Update visual ekspresi wajah berdasarkan sisa energi
 	_update_energy_visuals()
+	
+	# Deteksi gerak frame-to-frame secara universal
+	var is_moving: bool = global_position.distance_to(_prev_position) > 0.05
+	_prev_position = global_position
+	
+	# Animasikan berjalan memantul sinus (bobbing)
+	if is_moving:
+		var speed_factor: float = 0.012
+		
+		# Cek apakah karyawan lelah
+		var staff_mgr: Node = get_node_or_null("/root/StaffManager")
+		if staff_mgr:
+			for staff in staff_mgr.hired_staff:
+				if staff["id"] == staff_id:
+					if staff.get("energy", 100.0) <= 0.0:
+						speed_factor = 0.004 # Bobbing melambat karena lelah
+					break
+					
+		var bob_y = abs(sin(Time.get_ticks_msec() * speed_factor)) * -5.0
+		if visual_rect:
+			visual_rect.position.y = bob_y
+	else:
+		if visual_rect:
+			visual_rect.position.y = 0.0
 		
 	match role:
 		"Cashier":
 			_process_cashier_ai(delta)
 		"Stocker":
 			_process_stocker_ai(delta)
+
 
 func _update_energy_visuals() -> void:
 	var staff_mgr: Node = get_node_or_null("/root/StaffManager")

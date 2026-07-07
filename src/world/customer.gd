@@ -63,7 +63,17 @@ func _process(delta: float) -> void:
 	if TimeManager and TimeManager.time_scale == 0.0:
 		return
 		
+	# Animasi berjalan memantul (bobbing sinus)
+	if state in ["SHOPPING", "QUEUING", "LEAVING", "SPAWNING"] and global_position.distance_to(_get_current_target_position()) > 6.0:
+		var bob_y = abs(sin(Time.get_ticks_msec() * 0.012)) * -6.0
+		if visual_rect:
+			visual_rect.position.y = bob_y
+	else:
+		if visual_rect:
+			visual_rect.position.y = 0.0
+			
 	if state == "PAYING":
+
 		# Logika menghitung waktu pembayaran di kasir
 		paying_timer -= delta
 		if paying_timer <= 0.0:

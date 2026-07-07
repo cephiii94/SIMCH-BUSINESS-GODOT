@@ -32,3 +32,18 @@ func setup(event_data: Dictionary) -> void:
 		current_day = time_mgr.day
 		
 	date_label.text = "EDISI HARIAN - HARI KE-%d" % current_day
+
+## Memainkan animasi transisi pop-in elastis (overshoot) saat panel dibuka.
+func play_open_animation() -> void:
+	var panel_container: PanelContainer = get_node_or_null("CenterContainer/PanelContainer")
+	if panel_container:
+		# Tunggu satu frame agar engine Godot selesai mengkalkulasi properti size
+		await get_tree().process_frame
+		panel_container.pivot_offset = panel_container.size / 2
+		panel_container.scale = Vector2(0.85, 0.85)
+		panel_container.modulate.a = 0.0
+		
+		var tween: Tween = create_tween().set_parallel(true)
+		tween.tween_property(panel_container, "scale", Vector2.ONE, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tween.tween_property(panel_container, "modulate:a", 1.0, 0.25)
+

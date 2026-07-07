@@ -189,6 +189,9 @@ func _on_settings_pressed() -> void:
 		if save_btn:
 			save_btn.visible = (current_state == GameState.PLAYING)
 		settings_menu.show()
+		if settings_menu.has_method("play_open_animation"):
+			settings_menu.play_open_animation()
+
 	if main_menu:
 		main_menu.hide()
 	if hud:
@@ -231,6 +234,9 @@ func _on_stats_pressed() -> void:
 			TimeManager.time_scale = 0.0
 		stats_panel.populate_history()
 		stats_panel.show()
+		if stats_panel.has_method("play_open_animation"):
+			stats_panel.play_open_animation()
+
 	if hud:
 		hud.hide()
 
@@ -248,6 +254,9 @@ func _on_warehouse_pressed() -> void:
 			_prev_time_scale = TimeManager.time_scale
 			TimeManager.time_scale = 0.0
 		warehouse_panel.show()
+		if warehouse_panel.has_method("play_open_animation"):
+			warehouse_panel.play_open_animation()
+
 	if hud:
 		hud.hide()
 
@@ -268,6 +277,9 @@ func _on_shop_pressed() -> void:
 		if shop_panel.has_method("_populate_racks_list"):
 			shop_panel._populate_racks_list()
 		shop_panel.show()
+		if shop_panel.has_method("play_open_animation"):
+			shop_panel.play_open_animation()
+
 	if hud:
 		hud.hide()
 
@@ -287,6 +299,9 @@ func _on_staff_pressed() -> void:
 		if staff_panel.has_method("_refresh_views"):
 			staff_panel._refresh_views()
 		staff_panel.show()
+		if staff_panel.has_method("play_open_animation"):
+			staff_panel.play_open_animation()
+
 	if hud:
 		hud.hide()
 
@@ -306,6 +321,9 @@ func _on_reviews_pressed() -> void:
 		if reputation_panel.has_method("_populate_reviews_list"):
 			reputation_panel._populate_reviews_list()
 		reputation_panel.show()
+		if reputation_panel.has_method("play_open_animation"):
+			reputation_panel.play_open_animation()
+
 	if hud:
 		hud.hide()
 
@@ -324,6 +342,9 @@ func _show_daily_event_popup(event_data: Dictionary) -> void:
 			TimeManager.time_scale = 0.0
 		event_popup.setup(event_data)
 		event_popup.show()
+		if event_popup.has_method("play_open_animation"):
+			event_popup.play_open_animation()
+
 	if hud:
 		hud.hide()
 
@@ -344,6 +365,9 @@ func _on_achievements_pressed() -> void:
 		if achievement_panel.has_method("populate_achievements"):
 			achievement_panel.populate_achievements()
 		achievement_panel.show()
+		if achievement_panel.has_method("play_open_animation"):
+			achievement_panel.play_open_animation()
+
 	if hud:
 		hud.hide()
 

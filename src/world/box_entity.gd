@@ -11,6 +11,8 @@ var target_position: Vector2 = Vector2.ZERO
 var speed: float = 6.0
 var is_dispatched: bool = false
 
+var _has_landed: bool = false
+
 func _ready() -> void:
 	# Coba setup visual jika data sudah terisi saat diinstansiasi
 	if item_id != "":
@@ -20,9 +22,25 @@ func _process(delta: float) -> void:
 	# Meluncur secara halus ke posisi target
 	global_position = global_position.lerp(target_position, speed * delta)
 	
+	# Deteksi mendarat pertama kali di slot target
+	if not is_dispatched and not _has_landed and global_position.distance_to(target_position) < 5.0:
+		_has_landed = true
+		_play_land_animation()
+	
 	# Jika box sedang dikeluarkan (dispatch) dan sudah mendekati target keluar, hancurkan objek
 	if is_dispatched and global_position.distance_to(target_position) < 5.0:
 		queue_free()
+
+func _play_land_animation() -> void:
+	# Animasikan membal squash & stretch dari pusat origin
+	var tween = create_tween().set_parallel(false)
+	# Squash (menipis mendatar)
+	tween.tween_property(self, "scale", Vector2(1.2, 0.8), 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# Stretch (memanjang meninggi)
+	tween.tween_property(self, "scale", Vector2(0.9, 1.15), 0.10).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	# Kembali normal
+	tween.tween_property(self, "scale", Vector2.ONE, 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+
 
 ## Melakukan konfigurasi nama produk, posisi target, dan visual warna kardus.
 func setup(p_item_id: String, p_target_pos: Vector2) -> void:

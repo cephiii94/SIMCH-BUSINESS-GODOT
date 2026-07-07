@@ -246,9 +246,10 @@ Audio
 ## Sprint 22
 
 Animation
-- [ ] UI Animation
-- [ ] Building Animation
-- [ ] Customer Animation
+- [x] UI Animation
+- [x] Building Animation
+- [x] Customer Animation
+
 
 ---
 
