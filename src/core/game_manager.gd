@@ -20,6 +20,7 @@ var _prev_time_scale: float = 1.0
 @onready var stats_panel: Control = %StatsPanel
 @onready var warehouse_panel: Control = %WarehousePanel
 @onready var shop_panel: Control = %ShopPanel
+@onready var staff_panel: Control = %StaffPanel
 
 func _ready() -> void:
 	# Hubungkan sinyal dari MainMenu
@@ -35,6 +36,7 @@ func _ready() -> void:
 		hud.stats_pressed.connect(_on_stats_pressed)
 		hud.warehouse_pressed.connect(_on_warehouse_pressed)
 		hud.shop_pressed.connect(_on_shop_pressed)
+		hud.staff_pressed.connect(_on_staff_pressed)
 	
 	# Hubungkan sinyal dari SettingsMenu
 	if settings_menu:
@@ -51,6 +53,10 @@ func _ready() -> void:
 	# Hubungkan sinyal dari ShopPanel
 	if shop_panel:
 		shop_panel.close_pressed.connect(_on_shop_close_pressed)
+		
+	# Hubungkan sinyal dari StaffPanel
+	if staff_panel:
+		staff_panel.close_pressed.connect(_on_staff_close_pressed)
 	
 	# Mulai dengan Main Menu
 	change_state(GameState.MAIN_MENU)
@@ -74,6 +80,8 @@ func change_state(new_state: GameState) -> void:
 				warehouse_panel.hide()
 			if shop_panel:
 				shop_panel.hide()
+			if staff_panel:
+				staff_panel.hide()
 		GameState.PLAYING:
 			if world:
 				world.show()
@@ -89,6 +97,8 @@ func change_state(new_state: GameState) -> void:
 				warehouse_panel.hide()
 			if shop_panel:
 				shop_panel.hide()
+			if staff_panel:
+				staff_panel.hide()
 		GameState.PAUSED:
 			pass
 
@@ -113,6 +123,8 @@ func _on_settings_pressed() -> void:
 		warehouse_panel.hide()
 	if shop_panel:
 		shop_panel.hide()
+	if staff_panel:
+		staff_panel.hide()
 
 func _on_exit_pressed() -> void:
 	EventBus.game_exited.emit()
@@ -179,6 +191,25 @@ func _on_shop_pressed() -> void:
 func _on_shop_close_pressed() -> void:
 	if shop_panel:
 		shop_panel.hide()
+	if hud:
+		hud.show()
+	if TimeManager:
+		TimeManager.time_scale = _prev_time_scale
+
+func _on_staff_pressed() -> void:
+	if staff_panel:
+		if TimeManager:
+			_prev_time_scale = TimeManager.time_scale
+			TimeManager.time_scale = 0.0
+		if staff_panel.has_method("_refresh_views"):
+			staff_panel._refresh_views()
+		staff_panel.show()
+	if hud:
+		hud.hide()
+
+func _on_staff_close_pressed() -> void:
+	if staff_panel:
+		staff_panel.hide()
 	if hud:
 		hud.show()
 	if TimeManager:

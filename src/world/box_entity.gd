@@ -36,7 +36,7 @@ func setup_visual() -> void:
 	if not DatabaseManager:
 		return
 		
-	var item_data: ItemData = DatabaseManager.get_item(item_id)
+	var item_data = DatabaseManager.get_item(item_id)
 	if not item_data:
 		return
 		

@@ -74,7 +74,7 @@ func _populate_items_list() -> void:
 		var item_ref: Resource = item as Resource
 		
 		var hbox: HBoxContainer = HBoxContainer.new()
-		hbox.theme_override_constants.separation = 12
+		hbox.add_theme_constant_override("separation", 12)
 		
 		# Kolom Nama
 		var lbl_name: Label = Label.new()

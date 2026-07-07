@@ -158,18 +158,19 @@ Blueprint arsitektur proyek selesai.
 ## Sprint 12 — Customer System
 
 ### Tasks
-- [ ] Customer Spawn
-- [ ] Customer Behavior
-- [ ] Buying Logic
+- [x] Customer Spawning
+- [x] Customer AI
+- [x] Shopping Behavior
+- [x] Payment
 
 ---
 
 ## Sprint 13 — Employee System
 
 ### Tasks
-- [ ] Hire Employee
-- [ ] Salary
-- [ ] Productivity
+- [x] Hire Employee
+- [x] Salary
+- [x] Productivity
 
 ---
 

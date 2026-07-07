@@ -18,7 +18,7 @@ func _ready() -> void:
 	# Set harga jual default mengikuti harga pasar (reference price)
 	if DatabaseManager:
 		for item in DatabaseManager.get_all_items():
-			var item_ref: ItemData = item as ItemData
+			var item_ref = item
 			prices[item_ref.id] = item_ref.reference_price
 			
 	# Buat 3 rak default di Toko Ritel

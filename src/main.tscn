@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://src/core/game_manager.gd" id="1_game_manager"]
 [ext_resource type="PackedScene" path="res://src/world/world.tscn" id="2_world"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" path="res://src/ui/stats_panel.tscn" id="6_stats_panel"]
 [ext_resource type="PackedScene" path="res://src/ui/warehouse_panel.tscn" id="7_warehouse_panel"]
 [ext_resource type="PackedScene" path="res://src/ui/shop_panel.tscn" id="8_shop_panel"]
+[ext_resource type="PackedScene" path="res://src/ui/staff_panel.tscn" id="9_staff_panel"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1_game_manager")
@@ -44,6 +45,11 @@ visible = false
 layout_mode = 1
 
 [node name="ShopPanel" parent="UI" instance=ExtResource("8_shop_panel")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="StaffPanel" parent="UI" instance=ExtResource("9_staff_panel")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1

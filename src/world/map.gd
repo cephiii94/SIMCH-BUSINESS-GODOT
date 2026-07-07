@@ -1,7 +1,7 @@
 class_name GameMap
 extends Node2D
 
-## Menggambar tata letak lantai, dinding, loading dock, dan slot palet untuk Toko & Gudang.
+## Menggambar tata letak lantai, dinding, loading dock, slot palet, rak toko, dan meja kasir.
 
 const GRID_SIZE: int = 64
 const MAP_SIZE: int = 2000
@@ -12,6 +12,13 @@ const PALLET_SLOTS: Array = [
 	Vector2(200, -64), Vector2(320, -64), Vector2(440, -64), Vector2(560, -64),
 	Vector2(200, 64), Vector2(320, 64), Vector2(440, 64), Vector2(560, 64),
 	Vector2(200, 192), Vector2(320, 192), Vector2(440, 192), Vector2(560, 192)
+]
+
+# Koordinat pusat untuk 3 rak eceran di Toko
+const SHOP_RACKS: Array = [
+	Vector2(-400, -192),
+	Vector2(-400, 0),
+	Vector2(-400, 192)
 ]
 
 func _draw() -> void:
@@ -55,7 +62,29 @@ func _draw() -> void:
 		draw_rect(rect, slot_bg_color, true)
 		draw_rect(rect, slot_border_color, false, 1.5)
 		
-	# 5. Gambar Dinding Pembatas Tengah
+	# 5. Gambar Rak Toko Ritel (3 Unit di Toko)
+	var rack_color: Color = Color(0.45, 0.32, 0.20, 1.0) # Kayu coklat
+	var rack_border_color: Color = Color(0.60, 0.45, 0.30, 1.0) # Kayu terang untuk bingkai
+	for rack_pos in SHOP_RACKS:
+		# Ukuran rak: 80x80 piksel
+		var rect: Rect2 = Rect2(rack_pos.x - 40, rack_pos.y - 40, 80, 80)
+		draw_rect(rect, rack_color, true)
+		draw_rect(rect, rack_border_color, false, 3.0)
+		# Gambar rak tingkat garis-garis
+		draw_line(Vector2(rack_pos.x - 30, rack_pos.y - 15), Vector2(rack_pos.x + 30, rack_pos.y - 15), Color(0.15, 0.15, 0.15), 2.0)
+		draw_line(Vector2(rack_pos.x - 30, rack_pos.y + 15), Vector2(rack_pos.x + 30, rack_pos.y + 15), Color(0.15, 0.15, 0.15), 2.0)
+
+	# 6. Gambar Meja Kasir (1 Unit di Toko, posisi -200, 0)
+	var cashier_color: Color = Color(0.12, 0.20, 0.28, 1.0) # Biru navy/mahoni gelap
+	var cashier_border_color: Color = Color(0.121569, 0.529412, 0.901961, 1.0) # Aksen biru muda
+	var cashier_rect: Rect2 = Rect2(-240, -40, 80, 80)
+	draw_rect(cashier_rect, cashier_color, true)
+	draw_rect(cashier_rect, cashier_border_color, false, 2.5)
+	# Gambar mesin kasir kecil
+	draw_rect(Rect2(-210, -15, 20, 30), Color(0.8, 0.8, 0.8, 1.0), true)
+	draw_rect(Rect2(-205, -5, 10, 10), Color(0.1, 0.1, 0.1, 1.0), true)
+
+	# 7. Gambar Dinding Pembatas Tengah
 	# Dinding Kiri Pembatas Toko (x = -100) dan Dinding Kanan Pembatas Gudang (x = 100)
 	var wall_color: Color = Color(0.08, 0.09, 0.11, 1.0)
 	

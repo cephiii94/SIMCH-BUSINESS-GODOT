@@ -7,6 +7,7 @@ signal settings_pressed
 signal stats_pressed
 signal warehouse_pressed
 signal shop_pressed
+signal staff_pressed
 
 @onready var time_label: Label = %TimeLabel
 @onready var cash_label: Label = %CashLabel
@@ -46,7 +47,7 @@ func _ready() -> void:
 	# Hubungkan tombol panel lainnya
 	shop_button.pressed.connect(func() -> void: shop_pressed.emit())
 	warehouse_button.pressed.connect(func() -> void: warehouse_pressed.emit())
-	staff_button.pressed.connect(func() -> void: print("Buka Panel Staff (Sprint 13)"))
+	staff_button.pressed.connect(func() -> void: staff_pressed.emit())
 	stats_button.pressed.connect(func() -> void: stats_pressed.emit())
 	
 	# Inisialisasi visual tombol waktu

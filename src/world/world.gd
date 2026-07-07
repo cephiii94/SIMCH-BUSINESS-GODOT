@@ -1,18 +1,28 @@
 class_name GameWorld
 extends Node2D
 
-## Mengatur visualisasi gameplay 2D dunia game, transisi siang-malam, dan manajemen box fisik.
+## Mengatur visualisasi gameplay 2D dunia game, transisi siang-malam, dan manajemen box fisik, pelanggan, serta karyawan.
 
 const BOX_ENTITY_SCENE: PackedScene = preload("res://src/world/box_entity.tscn")
+const CUSTOMER_SCENE: PackedScene = preload("res://src/world/customer.tscn")
+const EMPLOYEE_ENTITY_SCENE: PackedScene = preload("res://src/world/employee_entity.tscn")
 
 @onready var spawn_point: Marker2D = $SpawnPoint
 @onready var camera: Camera2D = $Camera2D
 @onready var canvas_modulate: CanvasModulate = %CanvasModulate
 @onready var loading_dock: Marker2D = %LoadingDock
 @onready var pallet_slots_parent: Node2D = %PalletSlots
+@onready var customer_spawn_point: Marker2D = %CustomerSpawnPoint
+@onready var entities: Node2D = $Entities
 
 # Kamus pelacak slot palet terisi: { slot_index (int): BoxEntity }
 var slot_occupants: Dictionary = {}
+
+# Kamus pelacak karyawan fisik terisi: { staff_id (String): EmployeeEntity }
+var employee_nodes: Dictionary = {}
+
+# Timer pemijahan pelanggan
+var customer_spawn_timer: float = 2.0 # Muncul cepat saat awal bermain
 
 func _ready() -> void:
 	if spawn_point and camera:
@@ -24,6 +34,83 @@ func _ready() -> void:
 	# Set warna inisial berdasarkan waktu saat ini
 	if TimeManager:
 		_on_time_tick(TimeManager.day, TimeManager.hour, TimeManager.minute)
+
+	# Hubungkan sinyal perubahan staf
+	var staff_mgr: Node = get_node_or_null("/root/StaffManager")
+	if staff_mgr:
+		staff_mgr.staff_list_changed.connect(sync_employees)
+		sync_employees()
+
+func _process(delta: float) -> void:
+	# Jalankan pemijahan pelanggan berkala jika game sedang berjalan (tidak pause)
+	if TimeManager and TimeManager.time_scale > 0.0:
+		# Toko Ritel buka dari jam 08:00 pagi hingga 20:00 malam
+		if TimeManager.hour >= 8 and TimeManager.hour < 20:
+			customer_spawn_timer -= delta
+			if customer_spawn_timer <= 0.0:
+				# Interval kemunculan acak antara 8 hingga 14 detik
+				customer_spawn_timer = randf_range(8.0, 14.0)
+				spawn_customer()
+
+## Men-spawn pelanggan baru di jalan kiri luar toko.
+func spawn_customer() -> void:
+	if not CUSTOMER_SCENE:
+		return
+		
+	var customer: Node2D = CUSTOMER_SCENE.instantiate() as Node2D
+	if entities:
+		entities.add_child(customer)
+	else:
+		add_child(customer)
+		
+	if customer_spawn_point:
+		customer.global_position = customer_spawn_point.global_position
+	else:
+		customer.global_position = Vector2(-850, 200)
+		
+	print("[INFO] Pelanggan baru memasuki toko.")
+
+## Mensinkronisasikan entitas karyawan fisik dengan data StaffManager secara reaktif.
+func sync_employees() -> void:
+	var staff_mgr: Node = get_node_or_null("/root/StaffManager")
+	if not staff_mgr or not EMPLOYEE_ENTITY_SCENE:
+		return
+		
+	# 1. Hapus entitas fisik yang sudah tidak ada di data hired_staff
+	var active_ids: Array = []
+	for staff in staff_mgr.hired_staff:
+		active_ids.append(staff["id"])
+		
+	var current_node_ids: Array = employee_nodes.keys()
+	for staff_id in current_node_ids:
+		if not staff_id in active_ids:
+			var node: Node2D = employee_nodes[staff_id]
+			if is_instance_valid(node):
+				node.queue_free()
+			employee_nodes.erase(staff_id)
+			
+	# 2. Spawn entitas fisik baru yang terdaftar di hired_staff tapi belum ada nodenya
+	for staff in staff_mgr.hired_staff:
+		var staff_id: String = staff["id"]
+		if not employee_nodes.has(staff_id):
+			var emp: Node2D = EMPLOYEE_ENTITY_SCENE.instantiate() as Node2D
+			emp.staff_id = staff_id
+			emp.staff_name = staff["name"]
+			emp.role = staff["role"]
+			emp.speed_mult = staff["speed"]
+			
+			# Penempatan posisi spawn awal
+			if staff["role"] == "Cashier":
+				emp.global_position = Vector2(-220, 0)
+			else:
+				emp.global_position = Vector2(-300, 50)
+				
+			if entities:
+				entities.add_child(emp)
+			else:
+				add_child(emp)
+				
+			employee_nodes[staff_id] = emp
 
 ## Men-spawn box barang fisik di Loading Dock dan meluncurkannya ke slot palet yang kosong.
 func spawn_box(item_id: String) -> void:
@@ -44,7 +131,7 @@ func spawn_box(item_id: String) -> void:
 		return
 		
 	# Buat instansi BoxEntity baru di area Loading Dock
-	var box: BoxEntity = BOX_ENTITY_SCENE.instantiate() as BoxEntity
+	var box = BOX_ENTITY_SCENE.instantiate()
 	add_child(box)
 	
 	if loading_dock:
@@ -62,10 +149,10 @@ func spawn_box(item_id: String) -> void:
 func remove_box(item_id: String) -> void:
 	# Cari slot terisi yang memuat item_id tersebut
 	var found_slot_idx: int = -1
-	var found_box: BoxEntity = null
+	var found_box = null
 	
 	for slot_idx in slot_occupants:
-		var box: BoxEntity = slot_occupants[slot_idx]
+		var box = slot_occupants[slot_idx]
 		if box and box.item_id == item_id:
 			found_slot_idx = slot_idx
 			found_box = box

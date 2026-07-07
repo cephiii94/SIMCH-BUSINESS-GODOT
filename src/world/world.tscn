@@ -73,4 +73,24 @@ position = Vector2(440, 192)
 [node name="Slot15" type="Marker2D" parent="PalletSlots"]
 position = Vector2(560, 192)
 
+[node name="RackSlots" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Slot0" type="Marker2D" parent="RackSlots"]
+position = Vector2(-400, -192)
+
+[node name="Slot1" type="Marker2D" parent="RackSlots"]
+position = Vector2(-400, 0)
+
+[node name="Slot2" type="Marker2D" parent="RackSlots"]
+position = Vector2(-400, 192)
+
+[node name="CashierRegister" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(-200, 0)
+
+[node name="CustomerSpawnPoint" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(-850, 200)
+
 [node name="Entities" type="Node2D" parent="."]

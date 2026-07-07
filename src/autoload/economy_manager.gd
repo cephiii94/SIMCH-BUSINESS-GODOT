@@ -73,7 +73,16 @@ func _on_time_tick(day: int, _hour: int, _minute: int) -> void:
 		_last_tracked_day = day
 
 func _on_day_ended(day_index: int) -> void:
-	# 1. Catat biaya tetap sewa dan utilitas di akhir hari
+	# 1. Hitung dan catat gaji karyawan aktif
+	var total_wages: float = 0.0
+	var staff_mgr: Node = get_node_or_null("/root/StaffManager")
+	if staff_mgr:
+		for staff in staff_mgr.hired_staff:
+			total_wages += staff["daily_wage"]
+	if total_wages > 0.0:
+		record_expense(total_wages, ExpenseType.WAGES)
+
+	# 2. Catat biaya tetap sewa dan utilitas di akhir hari
 	record_expense(DAILY_RENT_COST, ExpenseType.RENT_UTILITY)
 	record_expense(DAILY_UTILITY_COST, ExpenseType.RENT_UTILITY)
 	
