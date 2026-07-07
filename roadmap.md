@@ -74,42 +74,42 @@ Blueprint arsitektur proyek selesai.
 ## Sprint 4 — Main Menu
 
 ### Tasks
-- [ ] Main Menu
-- [ ] New Game
-- [ ] Continue
-- [ ] Settings
-- [ ] Exit
+- [x] Main Menu
+- [x] New Game
+- [x] Continue
+- [x] Settings
+- [x] Exit
 
 ---
 
 ## Sprint 5 — Game World
 
 ### Tasks
-- [ ] World Scene
-- [ ] Camera
-- [ ] Player Spawn
-- [ ] UI dasar
+- [x] World Scene
+- [x] Camera
+- [x] Player Spawn
+- [x] UI dasar
 
 ---
 
 ## Sprint 6 — Camera System
 
 ### Tasks
-- [ ] Zoom
-- [ ] Drag
-- [ ] Camera Limits
-- [ ] Smooth Movement
+- [x] Zoom
+- [x] Drag
+- [x] Camera Limits
+- [x] Smooth Movement
 
 ---
 
 ## Sprint 7 — Time System
 
 ### Tasks
-- [ ] Hari
-- [ ] Jam
-- [ ] Menit
-- [ ] Pause
-- [ ] Fast Forward
+- [x] Hari
+- [x] Jam
+- [x] Menit
+- [x] Pause
+- [x] Fast Forward
 
 ---
 
@@ -118,40 +118,40 @@ Blueprint arsitektur proyek selesai.
 ## Sprint 8 — Economy System
 
 ### Tasks
-- [ ] Money
-- [ ] Income
-- [ ] Expense
-- [ ] Profit
+- [x] Money
+- [x] Income
+- [x] Expense
+- [x] Profit
 
 ---
 
 ## Sprint 9 — Inventory System
 
 ### Tasks
-- [ ] Item Database
-- [ ] Inventory
-- [ ] Stock
-- [ ] Capacity
+- [x] Item Database
+- [x] Inventory
+- [x] Stock
+- [x] Capacity
 
 ---
 
 ## Sprint 10 — Warehouse
 
 ### Tasks
-- [ ] Warehouse Scene
-- [ ] Item Storage
-- [ ] Receive Goods
-- [ ] Dispatch Goods
+- [x] Warehouse Scene
+- [x] Item Storage
+- [x] Receive Goods
+- [x] Dispatch Goods
 
 ---
 
 ## Sprint 11 — Shop System
 
 ### Tasks
-- [ ] Membeli Barang
-- [ ] Menjual Barang
-- [ ] Harga
-- [ ] Keuntungan
+- [x] Membeli Barang
+- [x] Menjual Barang
+- [x] Harga
+- [x] Keuntungan
 
 ---
 

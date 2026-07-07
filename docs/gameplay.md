@@ -3,7 +3,7 @@
 Dokumen ini menjelaskan kontrol, sistem kamera, aksi pemain, dan interaksi entitas di dalam game.
 
 ## 1. Perspektif & Kontrol Kamera
-* **Perspektif**: Tampilan 2D Top-Down atau Orthographic 2D yang memungkinkan pemain melihat seluruh area toko dan gudang dengan jelas.
+* **Perspektif**: Tampilan 2D 3/4 View (seperti *Stardew Valley* atau *Recettear*) yang memungkinkan pemain melihat wajah karakter, bagian depan rak, dan produk dengan jelas dari atas sudut kemiringan, dengan arah grid tetap horizontal-vertikal.
 * **Kontrol Kamera**:
   * **Geser (Drag)**: Klik kanan dan seret mouse (PC), atau seret dengan satu jari pada area kosong (Mobile).
   * **Perbesar/Perkecil (Zoom)**: Putar roda mouse (PC), atau cubit layar menggunakan dua jari (Mobile).

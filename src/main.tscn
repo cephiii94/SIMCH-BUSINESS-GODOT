@@ -1,0 +1,49 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://src/core/game_manager.gd" id="1_game_manager"]
+[ext_resource type="PackedScene" path="res://src/world/world.tscn" id="2_world"]
+[ext_resource type="PackedScene" path="res://src/ui/main_menu.tscn" id="3_main_menu"]
+[ext_resource type="PackedScene" path="res://src/ui/settings_menu.tscn" id="4_settings_menu"]
+[ext_resource type="PackedScene" path="res://src/ui/hud.tscn" id="5_hud"]
+[ext_resource type="PackedScene" path="res://src/ui/stats_panel.tscn" id="6_stats_panel"]
+[ext_resource type="PackedScene" path="res://src/ui/warehouse_panel.tscn" id="7_warehouse_panel"]
+[ext_resource type="PackedScene" path="res://src/ui/shop_panel.tscn" id="8_shop_panel"]
+
+[node name="Main" type="Node"]
+script = ExtResource("1_game_manager")
+
+[node name="World" parent="." instance=ExtResource("2_world")]
+unique_name_in_owner = true
+visible = false
+
+[node name="UI" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+
+[node name="MainMenu" parent="UI" instance=ExtResource("3_main_menu")]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="SettingsMenu" parent="UI" instance=ExtResource("4_settings_menu")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="HUD" parent="UI" instance=ExtResource("5_hud")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="StatsPanel" parent="UI" instance=ExtResource("6_stats_panel")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="WarehousePanel" parent="UI" instance=ExtResource("7_warehouse_panel")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="ShopPanel" parent="UI" instance=ExtResource("8_shop_panel")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1

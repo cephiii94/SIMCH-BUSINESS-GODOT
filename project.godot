@@ -8,11 +8,30 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="SimCH Business"
-config/features=PackedStringArray("4.3")
+run/main_scene="res://src/main.tscn"
+config/features=PackedStringArray("4.7")
 config/icon="res://icon.svg"
+
+[autoload]
+
+EventBus="*res://src/autoload/event_bus.gd"
+SaveManager="*res://src/autoload/save_manager.gd"
+TimeManager="*res://src/autoload/time_manager.gd"
+EconomyManager="*res://src/autoload/economy_manager.gd"
+DatabaseManager="*res://src/autoload/database_manager.gd"
+ShopManager="*res://src/autoload/shop_manager.gd"
+
+[display]
+
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
 
 [rendering]
 

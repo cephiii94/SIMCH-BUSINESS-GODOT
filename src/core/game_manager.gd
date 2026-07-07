@@ -1,0 +1,185 @@
+class_name GameManager
+extends Node
+
+## Mengontrol alur state game utama (MainMenu, Playing, Paused).
+
+enum GameState {
+	MAIN_MENU,
+	PLAYING,
+	PAUSED
+}
+
+var current_state: GameState = GameState.MAIN_MENU
+var _prev_time_scale: float = 1.0
+
+@onready var world: Node2D = %World
+@onready var ui: CanvasLayer = %UI
+@onready var main_menu: Control = %MainMenu
+@onready var settings_menu: Control = %SettingsMenu
+@onready var hud: Control = %HUD
+@onready var stats_panel: Control = %StatsPanel
+@onready var warehouse_panel: Control = %WarehousePanel
+@onready var shop_panel: Control = %ShopPanel
+
+func _ready() -> void:
+	# Hubungkan sinyal dari MainMenu
+	if main_menu:
+		main_menu.new_game_pressed.connect(_on_new_game_pressed)
+		main_menu.continue_pressed.connect(_on_continue_pressed)
+		main_menu.settings_pressed.connect(_on_settings_pressed)
+		main_menu.exit_pressed.connect(_on_exit_pressed)
+	
+	# Hubungkan sinyal dari HUD
+	if hud:
+		hud.settings_pressed.connect(_on_settings_pressed)
+		hud.stats_pressed.connect(_on_stats_pressed)
+		hud.warehouse_pressed.connect(_on_warehouse_pressed)
+		hud.shop_pressed.connect(_on_shop_pressed)
+	
+	# Hubungkan sinyal dari SettingsMenu
+	if settings_menu:
+		settings_menu.back_pressed.connect(_on_settings_back_pressed)
+		
+	# Hubungkan sinyal dari StatsPanel
+	if stats_panel:
+		stats_panel.close_pressed.connect(_on_stats_close_pressed)
+		
+	# Hubungkan sinyal dari WarehousePanel
+	if warehouse_panel:
+		warehouse_panel.close_pressed.connect(_on_warehouse_close_pressed)
+		
+	# Hubungkan sinyal dari ShopPanel
+	if shop_panel:
+		shop_panel.close_pressed.connect(_on_shop_close_pressed)
+	
+	# Mulai dengan Main Menu
+	change_state(GameState.MAIN_MENU)
+
+## Mengubah state game dan menyesuaikan visibilitas node terkait.
+func change_state(new_state: GameState) -> void:
+	current_state = new_state
+	match current_state:
+		GameState.MAIN_MENU:
+			if world:
+				world.hide()
+			if main_menu:
+				main_menu.show()
+			if settings_menu:
+				settings_menu.hide()
+			if hud:
+				hud.hide()
+			if stats_panel:
+				stats_panel.hide()
+			if warehouse_panel:
+				warehouse_panel.hide()
+			if shop_panel:
+				shop_panel.hide()
+		GameState.PLAYING:
+			if world:
+				world.show()
+			if main_menu:
+				main_menu.hide()
+			if settings_menu:
+				settings_menu.hide()
+			if hud:
+				hud.show()
+			if stats_panel:
+				stats_panel.hide()
+			if warehouse_panel:
+				warehouse_panel.hide()
+			if shop_panel:
+				shop_panel.hide()
+		GameState.PAUSED:
+			pass
+
+func _on_new_game_pressed() -> void:
+	EventBus.game_started.emit()
+	change_state(GameState.PLAYING)
+
+func _on_continue_pressed() -> void:
+	EventBus.game_started.emit()
+	change_state(GameState.PLAYING)
+
+func _on_settings_pressed() -> void:
+	if settings_menu:
+		settings_menu.show()
+	if main_menu:
+		main_menu.hide()
+	if hud:
+		hud.hide()
+	if stats_panel:
+		stats_panel.hide()
+	if warehouse_panel:
+		warehouse_panel.hide()
+	if shop_panel:
+		shop_panel.hide()
+
+func _on_exit_pressed() -> void:
+	EventBus.game_exited.emit()
+	get_tree().quit()
+
+func _on_settings_back_pressed() -> void:
+	if settings_menu:
+		settings_menu.hide()
+	
+	if current_state == GameState.MAIN_MENU:
+		if main_menu:
+			main_menu.show()
+	elif current_state == GameState.PLAYING:
+		if hud:
+			hud.show()
+
+func _on_stats_pressed() -> void:
+	if stats_panel:
+		if TimeManager:
+			_prev_time_scale = TimeManager.time_scale
+			TimeManager.time_scale = 0.0
+		stats_panel.populate_history()
+		stats_panel.show()
+	if hud:
+		hud.hide()
+
+func _on_stats_close_pressed() -> void:
+	if stats_panel:
+		stats_panel.hide()
+	if hud:
+		hud.show()
+	if TimeManager:
+		TimeManager.time_scale = _prev_time_scale
+
+func _on_warehouse_pressed() -> void:
+	if warehouse_panel:
+		if TimeManager:
+			_prev_time_scale = TimeManager.time_scale
+			TimeManager.time_scale = 0.0
+		warehouse_panel.show()
+	if hud:
+		hud.hide()
+
+func _on_warehouse_close_pressed() -> void:
+	if warehouse_panel:
+		warehouse_panel.hide()
+	if hud:
+		hud.show()
+	if TimeManager:
+		TimeManager.time_scale = _prev_time_scale
+
+func _on_shop_pressed() -> void:
+	if shop_panel:
+		if TimeManager:
+			_prev_time_scale = TimeManager.time_scale
+			TimeManager.time_scale = 0.0
+		# Refresh data rak sebelum ditampilkan
+		if shop_panel.has_method("_populate_racks_list"):
+			shop_panel._populate_racks_list()
+		shop_panel.show()
+	if hud:
+		hud.hide()
+
+func _on_shop_close_pressed() -> void:
+	if shop_panel:
+		shop_panel.hide()
+	if hud:
+		hud.show()
+	if TimeManager:
+		TimeManager.time_scale = _prev_time_scale
