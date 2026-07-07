@@ -63,6 +63,15 @@ func _get_current_speed() -> float:
 	var event_mgr: Node = get_node_or_null("/root/EventManager")
 	if event_mgr and event_mgr.active_event.size() > 0:
 		speed *= event_mgr.active_event.get("staff_speed_mult", 1.0)
+		
+	# Cek sisa energi dari StaffManager
+	var staff_mgr: Node = get_node_or_null("/root/StaffManager")
+	if staff_mgr:
+		for staff in staff_mgr.hired_staff:
+			if staff["id"] == staff_id:
+				if staff.get("energy", 100.0) <= 0.0:
+					speed *= 0.2 # Kinerja lambat karena kelelahan (kecepatan 20%)
+				break
 	return speed
 
 func _process(delta: float) -> void:
@@ -70,11 +79,32 @@ func _process(delta: float) -> void:
 	if TimeManager and TimeManager.time_scale == 0.0:
 		return
 		
+	# Update visual ekspresi wajah berdasarkan sisa energi
+	_update_energy_visuals()
+		
 	match role:
 		"Cashier":
 			_process_cashier_ai(delta)
 		"Stocker":
 			_process_stocker_ai(delta)
+
+func _update_energy_visuals() -> void:
+	var staff_mgr: Node = get_node_or_null("/root/StaffManager")
+	if not staff_mgr:
+		return
+		
+	for staff in staff_mgr.hired_staff:
+		if staff["id"] == staff_id:
+			var energy = staff.get("energy", 100.0)
+			if energy <= 0.0:
+				if face_label:
+					face_label.text = "😴"
+				if action_label and not "(Kelelahan!)" in action_label.text:
+					action_label.text += " (Kelelahan!)"
+			else:
+				if face_label:
+					face_label.text = "😐" if role == "Cashier" else "🔧"
+			break
 
 func _process_cashier_ai(delta: float) -> void:
 	# Kasir selalu berjaga di Meja Kasir
@@ -162,10 +192,16 @@ func _process_stocker_ai(delta: float) -> void:
 			if restock_delay_timer <= 0.0:
 				# Jalankan transaksi restock di ShopManager
 				var success: bool = ShopManager.restock_rack(target_rack_idx)
+				if success:
+					var staff_mgr = get_node_or_null("/root/StaffManager")
+					if staff_mgr:
+						staff_mgr.record_staff_work(staff_id, 1, 3.0) # Restock kurangi 3.0% energi, tambah 1 produktivitas
+				
 				# Lanjut bawa barang ke rak ritel
 				state = "WALKING_TO_SHELF"
 				if action_label:
 					action_label.text = "Menata Rak"
+
 					
 		"WALKING_TO_SHELF":
 			# Cari koordinat rak ritel di toko

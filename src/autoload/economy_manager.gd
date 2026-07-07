@@ -110,3 +110,9 @@ func _on_day_ended(day_index: int) -> void:
 	current_wages = 0.0
 	current_rent_maintenance = 0.0
 	current_expense = 0.0
+	
+	# 6. Reset energi dan produktivitas harian karyawan
+	var staff_mgr: Node = get_node_or_null("/root/StaffManager")
+	if staff_mgr:
+		staff_mgr.reset_daily_stats()
+

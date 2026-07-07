@@ -224,9 +224,10 @@ Blueprint arsitektur proyek selesai.
 
 ## Sprint 20 — Statistics
 
-- [ ] Revenue Graph
-- [ ] Business Report
-- [ ] Employee Report
+- [x] Revenue Graph
+- [x] Business Report
+- [x] Employee Report
+
 
 ---
 

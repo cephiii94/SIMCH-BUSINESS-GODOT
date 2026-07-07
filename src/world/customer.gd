@@ -135,15 +135,24 @@ func _on_reach_target() -> void:
 			state = "PAYING"
 			
 			var has_cashier: bool = false
+			var cashier_energy: float = 100.0
 			var staff_mgr: Node = get_node_or_null("/root/StaffManager")
 			if staff_mgr:
 				for staff in staff_mgr.hired_staff:
 					if staff["role"] == "Cashier":
 						has_cashier = true
+						cashier_energy = staff.get("energy", 100.0)
 						break
 						
-			paying_timer = 0.6 if has_cashier else 1.8
+			if has_cashier:
+				if cashier_energy <= 0.0:
+					paying_timer = 2.0 # Kasir lelah melayani lambat
+				else:
+					paying_timer = 0.6
+			else:
+				paying_timer = 1.8
 			action_label.text = "Membayar..."
+
 		"LEAVING":
 			queue_free()
 
@@ -182,15 +191,22 @@ func _process_checkout() -> void:
 	
 	# Cek apakah ada kasir aktif
 	var has_cashier: bool = false
+	var active_cashier_id: String = ""
 	var staff_mgr: Node = get_node_or_null("/root/StaffManager")
 	if staff_mgr:
 		for staff in staff_mgr.hired_staff:
 			if staff["role"] == "Cashier":
 				has_cashier = true
+				active_cashier_id = staff["id"]
 				break
+				
+	# Catat kontribusi kasir jika ada
+	if has_cashier and active_cashier_id != "":
+		staff_mgr.record_staff_work(active_cashier_id, 1, 1.0) # Kurangi 1.0% energi kasir, tambah 1 produktivitas
 				
 	# Picu ulasan di ReputationManager
 	var rep_mgr: Node = get_node_or_null("/root/ReputationManager")
+
 	if rep_mgr:
 		rep_mgr.generate_customer_review(basket.size(), shopping_list.size(), has_cashier)
 		

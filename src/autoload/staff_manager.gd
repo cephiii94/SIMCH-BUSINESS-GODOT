@@ -21,7 +21,8 @@ func _generate_applicants() -> void:
 			"speed": 1.30,
 			"daily_wage": 55.00,
 			"hire_cost": 100.00,
-			"energy": 100.0
+			"energy": 100.0,
+			"productivity": 0
 		},
 		{
 			"id": "staff_siti",
@@ -30,7 +31,8 @@ func _generate_applicants() -> void:
 			"speed": 1.15,
 			"daily_wage": 45.00,
 			"hire_cost": 90.00,
-			"energy": 100.0
+			"energy": 100.0,
+			"productivity": 0
 		},
 		{
 			"id": "staff_agus",
@@ -39,7 +41,8 @@ func _generate_applicants() -> void:
 			"speed": 1.45,
 			"daily_wage": 65.00,
 			"hire_cost": 120.00,
-			"energy": 100.0
+			"energy": 100.0,
+			"productivity": 0
 		}
 	]
 
@@ -51,6 +54,10 @@ func hire_employee(applicant_idx: int) -> bool:
 	var applicant: Dictionary = applicants[applicant_idx]
 	if EconomyManager and EconomyManager.cash >= applicant["hire_cost"]:
 		EconomyManager.record_expense(applicant["hire_cost"], EconomyManager.ExpenseType.INVESTMENT)
+		
+		# Pastikan default nilai produktivitas ada
+		if not applicant.has("productivity"):
+			applicant["productivity"] = 0
 		
 		# Pindahkan dari pelamar ke karyawan aktif
 		hired_staff.append(applicant)
@@ -68,3 +75,20 @@ func fire_employee(staff_idx: int) -> void:
 		
 	hired_staff.remove_at(staff_idx)
 	staff_list_changed.emit()
+
+## Mencatat kontribusi kerja dan mengurangi sisa energi karyawan aktif secara aman.
+func record_staff_work(staff_id: String, work_done: int = 1, energy_lost: float = 2.0) -> void:
+	for staff in hired_staff:
+		if staff["id"] == staff_id:
+			staff["energy"] = clamp(staff.get("energy", 100.0) - energy_lost, 0.0, 100.0)
+			staff["productivity"] = staff.get("productivity", 0) + work_done
+			staff_list_changed.emit()
+			break
+
+## Memulihkan sisa energi seluruh karyawan ke 100.0% dan mereset produktivitas harian saat pergantian hari.
+func reset_daily_stats() -> void:
+	for staff in hired_staff:
+		staff["energy"] = 100.0
+		staff["productivity"] = 0
+	staff_list_changed.emit()
+
