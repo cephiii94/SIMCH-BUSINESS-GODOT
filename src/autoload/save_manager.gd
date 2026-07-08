@@ -194,6 +194,12 @@ func load_game() -> bool:
 			var st: Dictionary = save_data["staff"]
 			staff_mgr.hired_staff = st.get("hired_staff", [])
 			staff_mgr.applicants = st.get("applicants", [])
+			
+			# Jika list pelamar kosong setelah load game, generate pelamar baru
+			if staff_mgr.applicants.size() == 0:
+				if staff_mgr.has_method("generate_random_applicants"):
+					staff_mgr.generate_random_applicants(3)
+					
 			staff_mgr.staff_list_changed.emit()
 			
 	# 6. Muat Reputasi

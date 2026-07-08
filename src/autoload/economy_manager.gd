@@ -100,7 +100,7 @@ func _on_day_ended(ended_day_index: int) -> void:
 	
 	# 3. Bentuk data laporan keuangan harian
 	var report: Dictionary = {
-		"day": day_index,
+		"day": ended_day_index,
 		"income": current_income,
 		"cogs": current_cogs,
 		"wages": current_wages,

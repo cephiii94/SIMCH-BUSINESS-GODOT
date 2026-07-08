@@ -66,6 +66,7 @@ func _populate_hired_list() -> void:
 		btn_fire.pressed.connect(func() -> void:
 			StaffManager.fire_employee(staff_idx)
 		)
+
 		
 		hbox.add_child(vbox_info)
 		hbox.add_child(btn_fire)
@@ -121,8 +122,18 @@ func _populate_applicant_list() -> void:
 		btn_hire.pressed.connect(func() -> void:
 			var success: bool = StaffManager.hire_employee(app_idx)
 			if not success:
+				# Umpan balik visual jika uang kas tidak cukup
+				btn_hire.text = "No Cash"
+				btn_hire.modulate = Color(1.0, 0.3, 0.3)
+				var t = create_tween()
+				t.tween_interval(1.2)
+				t.tween_callback(func():
+					btn_hire.text = "Rekrut"
+					btn_hire.modulate = Color(1.0, 1.0, 1.0)
+				)
 				print("[WARNING-STAFF] Kas tidak cukup untuk rekrutmen!")
 		)
+
 		
 		hbox.add_child(vbox_info)
 		hbox.add_child(btn_hire)

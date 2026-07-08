@@ -77,8 +77,8 @@ func _process(delta: float) -> void:
 				customer_spawn_timer = base_spawn_interval
 				spawn_customer()
 				
-		# Cek End of Shift (EOS)
-		if TimeManager.hour >= 21 or not TimeManager.is_shop_open:
+		# Cek End of Shift (EOS) - Hanya setelah jam 21:00 malam
+		if TimeManager.hour >= 21:
 			var customer_count: int = 0
 			if entities:
 				for child in entities.get_children():
@@ -87,6 +87,7 @@ func _process(delta: float) -> void:
 						
 			if customer_count == 0 and not TimeManager.is_day_ending:
 				_end_of_shift()
+
 
 func _end_of_shift() -> void:
 	# 1. Hentikan waktu permainan
