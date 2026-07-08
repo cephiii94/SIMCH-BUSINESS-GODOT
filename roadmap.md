@@ -256,18 +256,20 @@ Animation
 ## Sprint 23
 
 Optimization
-- [ ] Performance
-- [ ] Memory
-- [ ] Loading
+- [x] Performance
+- [x] Memory
+- [x] Loading
+
 
 ---
 
 ## Sprint 24
 
 Balancing
-- [ ] Economy
-- [ ] Progression
-- [ ] Difficulty
+- [x] Economy
+- [x] Progression
+- [x] Difficulty
+
 
 ---
 
@@ -276,9 +278,10 @@ Balancing
 ## Sprint 25
 
 Testing
-- [ ] Bug Fix
-- [ ] Playtest
-- [ ] Feedback
+- [x] Bug Fix
+- [x] Playtest
+- [x] Feedback
+
 
 ---
 

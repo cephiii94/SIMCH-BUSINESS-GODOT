@@ -14,7 +14,9 @@ var state: String = "SPAWNING" # SPAWNING, SHOPPING, QUEUING, PAYING, LEAVING
 var shopping_list: Array = []
 var basket: Array = []
 var current_list_idx: int = 0
-var satisfaction: String = "😀"
+var satisfaction: String = "😊"
+var overprice_complaints: int = 0
+
 var paying_timer: float = 0.0
 
 var _world_node: Node2D = null
@@ -25,18 +27,35 @@ func _ready() -> void:
 	if scene_root:
 		_world_node = scene_root.get_node_or_null("World") as Node2D
 		
-	# Inisialisasi daftar belanja acak dari rak yang tersedia
-	if ShopManager:
-		var available_items: Array = []
+	# Inisialisasi daftar belanja acak dari rak yang tersedia berdasarkan peluang kategori
+	if ShopManager and DatabaseManager:
+		var candidate_items: Array = []
 		for rack in ShopManager.racks:
-			available_items.append(rack["item_id"])
+			var item_id: String = rack["item_id"]
+			var item_ref = DatabaseManager.get_item(item_id)
+			if item_ref:
+				var chance: float = 0.5
+				match item_ref.category:
+					"Grocery":
+						chance = 0.85
+					"Clothing":
+						chance = 0.45
+					"Electronics":
+						chance = 0.15
+				
+				if randf() <= chance:
+					candidate_items.append(item_id)
+					
+		# Fallback jika tidak ada kandidat lolos, pilih rak pertama
+		if candidate_items.size() == 0 and ShopManager.racks.size() > 0:
+			candidate_items.append(ShopManager.racks[0]["item_id"])
 			
-		if available_items.size() > 0:
-			available_items.shuffle()
-			# Random beli 1 sampai 3 jenis barang
-			var buy_count: int = randi_range(1, min(3, available_items.size()))
+		if candidate_items.size() > 0:
+			candidate_items.shuffle()
+			var buy_count: int = randi_range(1, min(3, candidate_items.size()))
 			for i in range(buy_count):
-				shopping_list.append(available_items[i])
+				shopping_list.append(candidate_items[i])
+
 				
 	# Atur visual awal
 	face_label.text = satisfaction
@@ -64,7 +83,7 @@ func _process(delta: float) -> void:
 		return
 		
 	# Animasi berjalan memantul (bobbing sinus)
-	if state in ["SHOPPING", "QUEUING", "LEAVING", "SPAWNING"] and global_position.distance_to(_get_current_target_position()) > 6.0:
+	if state in ["SHOPPING", "QUEUING", "LEAVING", "SPAWNING"] and global_position.distance_squared_to(_get_current_target_position()) > 36.0:
 		var bob_y = abs(sin(Time.get_ticks_msec() * 0.012)) * -6.0
 		if visual_rect:
 			visual_rect.position.y = bob_y
@@ -73,7 +92,6 @@ func _process(delta: float) -> void:
 			visual_rect.position.y = 0.0
 			
 	if state == "PAYING":
-
 		# Logika menghitung waktu pembayaran di kasir
 		paying_timer -= delta
 		if paying_timer <= 0.0:
@@ -82,11 +100,12 @@ func _process(delta: float) -> void:
 		
 	# Logika pergerakan navigasi
 	var target_pos: Vector2 = _get_current_target_position()
-	if global_position.distance_to(target_pos) > 6.0:
+	if global_position.distance_squared_to(target_pos) > 36.0:
 		var dir: Vector2 = (target_pos - global_position).normalized()
 		global_position += dir * speed * delta
 	else:
 		_on_reach_target()
+
 
 ## Mendapatkan koordinat tujuan sesuai state saat ini.
 func _get_current_target_position() -> Vector2:
@@ -179,9 +198,26 @@ func _shop_current_item() -> void:
 		var rack: Dictionary = ShopManager.racks[rack_idx]
 		# Ambil barang dari rak jika stok masih ada
 		if rack["current_stock"] > 0:
-			rack["current_stock"] -= 1
-			basket.append(target_item_id)
-			_show_temp_feedback("+1 " + DatabaseManager.get_item(target_item_id).name.split(" ")[0])
+			var item_ref = DatabaseManager.get_item(target_item_id)
+			var price: float = ShopManager.get_price(target_item_id)
+			var ref_price: float = item_ref.reference_price if item_ref else price
+			
+			var markup: float = price / ref_price if ref_price > 0.0 else 1.0
+			var buy_chance: float = 1.0
+			if markup > 1.0:
+				# Markup 1.25x -> 50% peluang. Markup >= 1.5x -> 0% peluang
+				buy_chance = clamp(1.0 - (markup - 1.0) * 2.0, 0.0, 1.0)
+				
+			if randf() <= buy_chance:
+				rack["current_stock"] -= 1
+				basket.append(target_item_id)
+				_show_temp_feedback("+1 " + item_ref.name.split(" ")[0])
+			else:
+				# Komplain harga terlalu mahal
+				overprice_complaints += 1
+				satisfaction = "😡"
+				face_label.text = satisfaction
+				_show_temp_feedback("Kemahalan!")
 		else:
 			# Kecewa jika stok habis
 			satisfaction = "😡"
@@ -218,7 +254,11 @@ func _process_checkout() -> void:
 	var rep_mgr: Node = get_node_or_null("/root/ReputationManager")
 
 	if rep_mgr:
-		rep_mgr.generate_customer_review(basket.size(), shopping_list.size(), has_cashier)
+		if rep_mgr.has_method("generate_customer_review"):
+			rep_mgr.generate_customer_review(basket.size(), shopping_list.size(), has_cashier, overprice_complaints)
+		else:
+			rep_mgr.generate_customer_review(basket.size(), shopping_list.size(), has_cashier)
+
 		
 	if basket.size() > 0:
 		for item_id in basket:

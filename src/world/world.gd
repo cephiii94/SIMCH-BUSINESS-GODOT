@@ -201,21 +201,27 @@ func load_warehouse_boxes() -> void:
 			box.queue_free()
 	slot_occupants.clear()
 	
-	if not ShopManager or not ShopManager.warehouse_inventory:
+	if not ShopManager or not ShopManager.warehouse_inventory or not DatabaseManager:
 		return
 		
 	var idx: int = 0
 	for item_id in ShopManager.warehouse_inventory.items:
 		var count: int = ShopManager.warehouse_inventory.items[item_id]
-		if count > 0 and idx < 16:
-			var slot_node: Marker2D = pallet_slots_parent.get_node_or_null("Slot" + str(idx)) as Marker2D
-			if slot_node:
-				var box = BOX_ENTITY_SCENE.instantiate()
-				add_child(box)
-				box.global_position = slot_node.global_position
-				box.setup(item_id, slot_node.global_position)
-				slot_occupants[idx] = box
-				idx += 1
+		var item_ref = DatabaseManager.get_item(item_id)
+		if item_ref and count > 0:
+			# Hitung jumlah box utuh (total unit stok dibagi dengan kapasitas per box)
+			var box_count: int = int(ceil(float(count) / float(item_ref.box_size)))
+			for b in range(box_count):
+				if idx < 16:
+					var slot_node: Marker2D = pallet_slots_parent.get_node_or_null("Slot" + str(idx)) as Marker2D
+					if slot_node:
+						var box = BOX_ENTITY_SCENE.instantiate()
+						add_child(box)
+						box.global_position = slot_node.global_position
+						box.setup(item_id, slot_node.global_position)
+						slot_occupants[idx] = box
+						idx += 1
+
 
 ## Mensinkronisasikan penanda koordinat rak ritel otonom untuk navigasi AI.
 func sync_racks() -> void:

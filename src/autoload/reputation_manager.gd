@@ -34,8 +34,8 @@ func add_review(stars: int, comment: String) -> void:
 	rating_changed.emit(rating)
 	review_added.emit(review)
 
-## Menghasilkan ulasan berdasarkan hasil belanja dan kasir secara otonom.
-func generate_customer_review(basket_size: int, shopping_list_size: int, has_cashier: bool) -> void:
+## Menghasilkan ulasan ulasan berdasarkan hasil belanja, kasir, dan harga secara otonom.
+func generate_customer_review(basket_size: int, shopping_list_size: int, has_cashier: bool, overprice_complaints: int = 0) -> void:
 	if shopping_list_size == 0:
 		return
 		
@@ -43,41 +43,59 @@ func generate_customer_review(basket_size: int, shopping_list_size: int, has_cas
 	var stars: int = 3
 	var comments: Array = []
 	
-	if ratio >= 1.0:
-		if has_cashier:
-			stars = 5
+	if overprice_complaints > 0:
+		# Ulasan buruk tentang harga kemahalan
+		if overprice_complaints >= 2:
+			stars = 1
 			comments = [
-				"Sangat puas! Barangnya lengkap dan kasirnya cepat melayani.",
-				"Toko yang sangat rapi! Semua daftar belanja saya terpenuhi.",
-				"Pelayanan kasir luar biasa cepat dan produk lengkap."
+				"Harga barang di toko ini sangat gila! Benar-benar perampokan!",
+				"Harga-harga sangat tidak masuk akal, saya pulang karena kemahalan.",
+				"Semua barang dinaikkan harganya terlalu tinggi. Sangat kecewa!"
 			]
 		else:
-			stars = 4
+			stars = 2
 			comments = [
-				"Barang-barang lengkap, tapi sayang harus mengantre lama di kasir.",
-				"Semua belanjaan ada, tapi tidak ada kasir yang bertugas."
+				"Sebagian barang terlalu mahal dibandingkan toko lain.",
+				"Toko ini mematok harga di atas standar. Kurang recommended.",
+				"Barang bagus tapi harganya kemahalan, saya terpaksa batal membeli."
 			]
-	elif ratio >= 0.5:
-		stars = 3
-		comments = [
-			"Sebagian barang ada, tapi beberapa rak kosong.",
-			"Belanjaan lumayan terpenuhi meskipun ada produk yang habis."
-		]
-	elif ratio > 0.0:
-		stars = 2
-		comments = [
-			"Banyak barang yang habis. Tolong di-restock raknya!",
-			"Mengecewakan, saya hanya dapat satu barang dari daftar saya."
-		]
 	else:
-		stars = 1
-		comments = [
-			"Toko terburuk! Semua rak kosong melompong.",
-			"Saya pulang dengan tangan kosong, tidak ada produk sama sekali."
-		]
+		if ratio >= 1.0:
+			if has_cashier:
+				stars = 5
+				comments = [
+					"Sangat puas! Barangnya lengkap dan kasirnya cepat melayani.",
+					"Toko yang sangat rapi! Semua daftar belanja saya terpenuhi.",
+					"Pelayanan kasir luar biasa cepat dan produk lengkap."
+				]
+			else:
+				stars = 4
+				comments = [
+					"Barang-barang lengkap, tapi sayang harus mengantre lama di kasir.",
+					"Semua belanjaan ada, tapi tidak ada kasir yang bertugas."
+				]
+		elif ratio >= 0.5:
+			stars = 3
+			comments = [
+				"Sebagian barang ada, tapi beberapa rak kosong.",
+				"Belanjaan lumayan terpenuhi meskipun ada produk yang habis."
+			]
+		elif ratio > 0.0:
+			stars = 2
+			comments = [
+				"Banyak barang yang habis. Tolong di-restock raknya!",
+				"Mengecewakan, saya hanya dapat satu barang dari daftar saya."
+			]
+		else:
+			stars = 1
+			comments = [
+				"Toko terburuk! Semua rak kosong melompong.",
+				"Saya pulang dengan tangan kosong, tidak ada produk sama sekali."
+			]
 		
 	var comment: String = comments[randi() % comments.size()]
 	add_review(stars, comment)
+
 	
 ## Menambahkan bonus rating reputasi secara instan (misal untuk reward pencapaian).
 func add_reputation_bonus(amount: float) -> void:

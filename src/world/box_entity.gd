@@ -23,13 +23,14 @@ func _process(delta: float) -> void:
 	global_position = global_position.lerp(target_position, speed * delta)
 	
 	# Deteksi mendarat pertama kali di slot target
-	if not is_dispatched and not _has_landed and global_position.distance_to(target_position) < 5.0:
+	if not is_dispatched and not _has_landed and global_position.distance_squared_to(target_position) < 25.0:
 		_has_landed = true
 		_play_land_animation()
 	
 	# Jika box sedang dikeluarkan (dispatch) dan sudah mendekati target keluar, hancurkan objek
-	if is_dispatched and global_position.distance_to(target_position) < 5.0:
+	if is_dispatched and global_position.distance_squared_to(target_position) < 25.0:
 		queue_free()
+
 
 func _play_land_animation() -> void:
 	# Animasikan membal squash & stretch dari pusat origin

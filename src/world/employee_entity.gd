@@ -62,20 +62,32 @@ func _setup_visual() -> void:
 	if action_label:
 		action_label.text = staff_name + " (Siaga)"
 
+var _cached_staff_ref: Dictionary = {}
+
+func _get_staff_ref() -> Dictionary:
+	if _cached_staff_ref.size() > 0:
+		if _cached_staff_ref.get("id", "") == staff_id:
+			return _cached_staff_ref
+	
+	var staff_mgr: Node = get_node_or_null("/root/StaffManager")
+	if staff_mgr:
+		for staff in staff_mgr.hired_staff:
+			if staff["id"] == staff_id:
+				_cached_staff_ref = staff
+				return _cached_staff_ref
+	return {}
+
 func _get_current_speed() -> float:
 	var speed = base_speed * speed_mult
 	var event_mgr: Node = get_node_or_null("/root/EventManager")
 	if event_mgr and event_mgr.active_event.size() > 0:
 		speed *= event_mgr.active_event.get("staff_speed_mult", 1.0)
 		
-	# Cek sisa energi dari StaffManager
-	var staff_mgr: Node = get_node_or_null("/root/StaffManager")
-	if staff_mgr:
-		for staff in staff_mgr.hired_staff:
-			if staff["id"] == staff_id:
-				if staff.get("energy", 100.0) <= 0.0:
-					speed *= 0.2 # Kinerja lambat karena kelelahan (kecepatan 20%)
-				break
+	# Cek sisa energi dari cache referensi
+	var staff: Dictionary = _get_staff_ref()
+	if staff.size() > 0:
+		if staff.get("energy", 100.0) <= 0.0:
+			speed *= 0.2 # Kinerja lambat karena kelelahan (kecepatan 20%)
 	return speed
 
 func _process(delta: float) -> void:
@@ -87,21 +99,18 @@ func _process(delta: float) -> void:
 	_update_energy_visuals()
 	
 	# Deteksi gerak frame-to-frame secara universal
-	var is_moving: bool = global_position.distance_to(_prev_position) > 0.05
+	var is_moving: bool = global_position.distance_squared_to(_prev_position) > 0.0025
 	_prev_position = global_position
 	
 	# Animasikan berjalan memantul sinus (bobbing)
 	if is_moving:
 		var speed_factor: float = 0.012
 		
-		# Cek apakah karyawan lelah
-		var staff_mgr: Node = get_node_or_null("/root/StaffManager")
-		if staff_mgr:
-			for staff in staff_mgr.hired_staff:
-				if staff["id"] == staff_id:
-					if staff.get("energy", 100.0) <= 0.0:
-						speed_factor = 0.004 # Bobbing melambat karena lelah
-					break
+		# Cek apakah karyawan lelah via cache referensi
+		var staff: Dictionary = _get_staff_ref()
+		if staff.size() > 0:
+			if staff.get("energy", 100.0) <= 0.0:
+				speed_factor = 0.004 # Bobbing melambat karena lelah
 					
 		var bob_y = abs(sin(Time.get_ticks_msec() * speed_factor)) * -5.0
 		if visual_rect:
@@ -116,24 +125,18 @@ func _process(delta: float) -> void:
 		"Stocker":
 			_process_stocker_ai(delta)
 
-
 func _update_energy_visuals() -> void:
-	var staff_mgr: Node = get_node_or_null("/root/StaffManager")
-	if not staff_mgr:
-		return
-		
-	for staff in staff_mgr.hired_staff:
-		if staff["id"] == staff_id:
-			var energy = staff.get("energy", 100.0)
-			if energy <= 0.0:
-				if face_label:
-					face_label.text = "😴"
-				if action_label and not "(Kelelahan!)" in action_label.text:
-					action_label.text += " (Kelelahan!)"
-			else:
-				if face_label:
-					face_label.text = "😐" if role == "Cashier" else "🔧"
-			break
+	var staff: Dictionary = _get_staff_ref()
+	if staff.size() > 0:
+		var energy = staff.get("energy", 100.0)
+		if energy <= 0.0:
+			if face_label:
+				face_label.text = "😴"
+			if action_label and not "(Kelelahan!)" in action_label.text:
+				action_label.text += " (Kelelahan!)"
+		else:
+			if face_label:
+				face_label.text = "😐" if role == "Cashier" else "🔧"
 
 func _process_cashier_ai(delta: float) -> void:
 	# Kasir selalu berjaga di Meja Kasir
@@ -144,7 +147,7 @@ func _process_cashier_ai(delta: float) -> void:
 			# Berdiri sedikit di belakang meja kasir
 			cashier_target = cashier_node.global_position + Vector2(-20, 0)
 			
-	if global_position.distance_to(cashier_target) > 5.0:
+	if global_position.distance_squared_to(cashier_target) > 25.0:
 		var dir: Vector2 = (cashier_target - global_position).normalized()
 		global_position += dir * _get_current_speed() * delta
 		if action_label:
@@ -184,7 +187,7 @@ func _process_stocker_ai(delta: float) -> void:
 			else:
 				# Kembali siaga di tengah toko ritel
 				var home_pos: Vector2 = Vector2(-300, 50)
-				if global_position.distance_to(home_pos) > 8.0:
+				if global_position.distance_squared_to(home_pos) > 64.0:
 					var dir: Vector2 = (home_pos - global_position).normalized()
 					global_position += dir * _get_current_speed() * delta
 				else:
@@ -207,7 +210,7 @@ func _process_stocker_ai(delta: float) -> void:
 					if slot_node:
 						target_pos = slot_node.global_position
 						
-			if global_position.distance_to(target_pos) > 6.0:
+			if global_position.distance_squared_to(target_pos) > 36.0:
 				var dir: Vector2 = (target_pos - global_position).normalized()
 				global_position += dir * _get_current_speed() * delta
 			else:
@@ -242,7 +245,7 @@ func _process_stocker_ai(delta: float) -> void:
 					if slot:
 						target_pos = slot.global_position
 						
-			if global_position.distance_to(target_pos) > 6.0:
+			if global_position.distance_squared_to(target_pos) > 36.0:
 				var dir: Vector2 = (target_pos - global_position).normalized()
 				global_position += dir * _get_current_speed() * delta
 			else:
@@ -250,3 +253,4 @@ func _process_stocker_ai(delta: float) -> void:
 				state = "IDLE"
 				if action_label:
 					action_label.text = "Selesai!"
+
