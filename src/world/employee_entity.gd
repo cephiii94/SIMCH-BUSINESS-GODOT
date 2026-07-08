@@ -200,10 +200,14 @@ func _process_stocker_ai(delta: float) -> void:
 			if _world_node:
 				var found_slot_idx: int = -1
 				for slot_idx in _world_node.slot_occupants:
-					var box = _world_node.slot_occupants[slot_idx]
-					if box and box.item_id == target_item_id:
-						found_slot_idx = slot_idx
-						break
+
+					var stack = _world_node.slot_occupants[slot_idx]
+					if stack is Array and stack.size() > 0:
+						var first_box = stack[0]
+						if first_box and first_box.item_id == target_item_id:
+							found_slot_idx = slot_idx
+							break
+
 				
 				if found_slot_idx != -1:
 					var slot_node: Marker2D = _world_node.pallet_slots_parent.get_node("Slot" + str(found_slot_idx)) as Marker2D

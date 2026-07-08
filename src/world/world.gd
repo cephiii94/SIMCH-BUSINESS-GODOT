@@ -30,6 +30,7 @@ func _ready() -> void:
 		
 	# Hubungkan sinyal waktu dari EventBus
 	EventBus.time_tick.connect(_on_time_tick)
+	EventBus.day_started.connect(sync_employees)
 	
 	# Set warna inisial berdasarkan waktu saat ini
 	if TimeManager:
@@ -50,8 +51,8 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	# Jalankan pemijahan pelanggan berkala jika game sedang berjalan (tidak pause)
 	if TimeManager and TimeManager.time_scale > 0.0:
-		# Toko Ritel buka dari jam 08:00 pagi hingga 20:00 malam
-		if TimeManager.hour >= 8 and TimeManager.hour < 20:
+		# Toko Ritel buka sesuai status TimeManager.is_shop_open
+		if TimeManager.is_shop_open:
 			customer_spawn_timer -= delta
 			if customer_spawn_timer <= 0.0:
 				# Tentukan interval spawn berdasarkan rating reputasi aktif
@@ -75,6 +76,41 @@ func _process(delta: float) -> void:
 					
 				customer_spawn_timer = base_spawn_interval
 				spawn_customer()
+				
+		# Cek End of Shift (EOS)
+		if TimeManager.hour >= 21 or not TimeManager.is_shop_open:
+			var customer_count: int = 0
+			if entities:
+				for child in entities.get_children():
+					if child is Node2D and child.has_method("_shop_current_item"):
+						customer_count += 1
+						
+			if customer_count == 0 and not TimeManager.is_day_ending:
+				_end_of_shift()
+
+func _end_of_shift() -> void:
+	# 1. Hentikan waktu permainan
+	TimeManager.time_scale = 0.0
+	TimeManager.is_day_ending = true
+	
+	# 2. Pulangkan karyawan secara visual
+	_clear_all_employees()
+	
+	# 3. Pemicu akuntansi akhir hari & pemulihan energi staf di EconomyManager
+	var eco_mgr: Node = get_node_or_null("/root/EconomyManager")
+	if eco_mgr:
+		eco_mgr.trigger_day_end_accounting()
+		
+	# 4. Pancarkan sinyal EOS
+	EventBus.end_of_shift.emit()
+
+func _clear_all_employees() -> void:
+	for staff_id in employee_nodes:
+		var node = employee_nodes[staff_id]
+		if is_instance_valid(node):
+			node.queue_free()
+	employee_nodes.clear()
+
 
 ## Men-spawn pelanggan baru di jalan kiri luar toko.
 func spawn_customer() -> void:
@@ -136,17 +172,26 @@ func sync_employees() -> void:
 				
 			employee_nodes[staff_id] = emp
 
-## Men-spawn box barang fisik di Loading Dock dan meluncurkannya ke slot palet yang kosong.
+## Men-spawn box barang fisik di Loading Dock dan meluncurkannya ke slot palet dengan tumpukan maksimal 5 box.
 func spawn_box(item_id: String) -> void:
-	# Cari slot palet yang kosong
+	# Cari slot palet yang sudah berisi item yang sama dan tumpukannya < 5
 	var target_slot_idx: int = -1
 	for i in range(16):
-		if not slot_occupants.has(i):
-			target_slot_idx = i
-			break
-			
+		if slot_occupants.has(i) and slot_occupants[i] is Array and slot_occupants[i].size() > 0:
+			var first_box = slot_occupants[i][0]
+			if first_box and first_box.item_id == item_id and slot_occupants[i].size() < 5:
+				target_slot_idx = i
+				break
+				
+	# Jika tidak ditemukan slot yang sejenis, cari slot kosong sama sekali
 	if target_slot_idx == -1:
-		print("[WARNING-WORLD] Tidak ada slot palet kosong di gudang!")
+		for i in range(16):
+			if not slot_occupants.has(i) or not slot_occupants[i] is Array or slot_occupants[i].size() == 0:
+				target_slot_idx = i
+				break
+				
+	if target_slot_idx == -1:
+		print("[WARNING-WORLD] Tidak ada slot palet kosong atau tumpukan yang tersedia di gudang!")
 		return
 		
 	# Dapatkan Marker2D slot tujuan
@@ -154,6 +199,14 @@ func spawn_box(item_id: String) -> void:
 	if not slot_node:
 		return
 		
+	# Inisialisasi array jika slot baru terpakai
+	if not slot_occupants.has(target_slot_idx) or not slot_occupants[target_slot_idx] is Array:
+		slot_occupants[target_slot_idx] = []
+		
+	var current_stack_height: int = slot_occupants[target_slot_idx].size()
+	# Hitung posisi target dengan menggeser koordinat Y ke atas 12 piksel per tumpukan
+	var target_pos: Vector2 = slot_node.global_position + Vector2(0, -12 * current_stack_height)
+	
 	# Buat instansi BoxEntity baru di area Loading Dock
 	var box = BOX_ENTITY_SCENE.instantiate()
 	add_child(box)
@@ -164,63 +217,90 @@ func spawn_box(item_id: String) -> void:
 		box.global_position = Vector2(800, 0)
 		
 	# Setup visual dan target pergeseran
-	box.setup(item_id, slot_node.global_position)
+	box.setup(item_id, target_pos)
 	
-	# Daftarkan penanggung slot
-	slot_occupants[target_slot_idx] = box
+	# Daftarkan ke array penanggung slot
+	slot_occupants[target_slot_idx].append(box)
 
-## Mengeluarkan box barang fisik dari slot palet dan mengarahkannya meluncur keluar gudang.
+## Mengeluarkan box barang fisik paling atas dari tumpukan slot palet dan mengarahkannya meluncur keluar gudang.
 func remove_box(item_id: String) -> void:
 	# Cari slot terisi yang memuat item_id tersebut
 	var found_slot_idx: int = -1
 	var found_box = null
 	
 	for slot_idx in slot_occupants:
-		var box = slot_occupants[slot_idx]
-		if box and box.item_id == item_id:
-			found_slot_idx = slot_idx
-			found_box = box
-			break
-			
+		var stack = slot_occupants[slot_idx]
+		if stack is Array and stack.size() > 0:
+			var base_box = stack[0]
+			if base_box and base_box.item_id == item_id:
+				found_slot_idx = slot_idx
+				found_box = stack[stack.size() - 1] # Ambil box paling atas dari tumpukan
+				break
+				
 	if found_box:
-		# Hapus dari daftar penanggung slot
-		slot_occupants.erase(found_slot_idx)
-		
+		# Hapus dari array tumpukan
+		slot_occupants[found_slot_idx].erase(found_box)
+		if slot_occupants[found_slot_idx].size() == 0:
+			slot_occupants.erase(found_slot_idx)
+			
 		# Luncurkan box ke koridor penghubung tengah (keluar dari gudang menuju toko)
 		var exit_pos: Vector2 = Vector2(-200, 0)
 		found_box.dispatch(exit_pos)
 	else:
 		print("[WARNING-WORLD] Box barang untuk item '", item_id, "' tidak ditemukan di gudang!")
 
-## Memuat dan menempatkan ulang box barang fisik di slot palet secara instan (untuk load game).
+## Memuat dan menempatkan ulang box barang fisik di slot palet secara instan dengan tumpukan vertikal (untuk load game).
 func load_warehouse_boxes() -> void:
 	# Bersihkan box lama
 	for slot_idx in slot_occupants:
-		var box = slot_occupants[slot_idx]
-		if is_instance_valid(box):
-			box.queue_free()
+		var stack = slot_occupants[slot_idx]
+		if stack is Array:
+			for box in stack:
+				if is_instance_valid(box):
+					box.queue_free()
 	slot_occupants.clear()
 	
 	if not ShopManager or not ShopManager.warehouse_inventory or not DatabaseManager:
 		return
 		
-	var idx: int = 0
+	# Loop untuk memulihkan visual tumpukan kardus secara presisi
 	for item_id in ShopManager.warehouse_inventory.items:
 		var count: int = ShopManager.warehouse_inventory.items[item_id]
 		var item_ref = DatabaseManager.get_item(item_id)
 		if item_ref and count > 0:
-			# Hitung jumlah box utuh (total unit stok dibagi dengan kapasitas per box)
+			# Hitung jumlah box utuh
 			var box_count: int = int(ceil(float(count) / float(item_ref.box_size)))
 			for b in range(box_count):
-				if idx < 16:
-					var slot_node: Marker2D = pallet_slots_parent.get_node_or_null("Slot" + str(idx)) as Marker2D
+				# Cari slot yang cocok (item_id sama dan tinggi < 5) atau slot kosong
+				var target_slot_idx: int = -1
+				for i in range(16):
+					if slot_occupants.has(i) and slot_occupants[i] is Array and slot_occupants[i].size() > 0:
+						if slot_occupants[i][0].item_id == item_id and slot_occupants[i].size() < 5:
+							target_slot_idx = i
+							break
+				if target_slot_idx == -1:
+					for i in range(16):
+						if not slot_occupants.has(i) or not slot_occupants[i] is Array or slot_occupants[i].size() == 0:
+							target_slot_idx = i
+							break
+							
+				if target_slot_idx != -1:
+					if not slot_occupants.has(target_slot_idx) or not slot_occupants[target_slot_idx] is Array:
+						slot_occupants[target_slot_idx] = []
+						
+					var slot_node: Marker2D = pallet_slots_parent.get_node_or_null("Slot" + str(target_slot_idx)) as Marker2D
 					if slot_node:
+						var current_height: int = slot_occupants[target_slot_idx].size()
+						var target_pos: Vector2 = slot_node.global_position + Vector2(0, -12 * current_height)
+						
 						var box = BOX_ENTITY_SCENE.instantiate()
 						add_child(box)
-						box.global_position = slot_node.global_position
-						box.setup(item_id, slot_node.global_position)
-						slot_occupants[idx] = box
-						idx += 1
+						box.global_position = target_pos # Instan pos di slot
+						box.setup(item_id, target_pos)
+						
+						slot_occupants[target_slot_idx].append(box)
+
+
 
 
 ## Mensinkronisasikan penanda koordinat rak ritel otonom untuk navigasi AI.

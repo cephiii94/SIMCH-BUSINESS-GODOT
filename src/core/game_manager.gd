@@ -79,10 +79,12 @@ func _ready() -> void:
 		
 	# Hubungkan notifikasi pencapaian dari EventBus
 	EventBus.achievement_unlocked.connect(_on_achievement_unlocked)
+	EventBus.end_of_shift.connect(_on_end_of_shift)
 
 	
 	# Mulai dengan Main Menu
 	change_state(GameState.MAIN_MENU)
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
@@ -246,7 +248,14 @@ func _on_stats_close_pressed() -> void:
 	if hud:
 		hud.show()
 	if TimeManager:
-		TimeManager.time_scale = _prev_time_scale
+		if TimeManager.is_day_ending:
+			TimeManager.time_scale = 0.0
+		else:
+			TimeManager.time_scale = _prev_time_scale
+
+func _on_end_of_shift() -> void:
+	_on_stats_pressed()
+
 
 func _on_warehouse_pressed() -> void:
 	if warehouse_panel:

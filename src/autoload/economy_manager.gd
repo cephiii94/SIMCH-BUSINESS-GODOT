@@ -66,13 +66,22 @@ func record_expense(amount: float, type: ExpenseType) -> void:
 			
 	EventBus.money_changed.emit(cash)
 
-func _on_time_tick(day: int, _hour: int, _minute: int) -> void:
-	# Jika hari bertambah
-	if day > _last_tracked_day:
-		_on_day_ended(_last_tracked_day)
-		_last_tracked_day = day
+func _on_time_tick(_day_index: int, _hour: int, _minute: int) -> void:
+	# Pergantian hari kini dipicu secara manual saat semua pelanggan selesai checkout
+	pass
 
-func _on_day_ended(day_index: int) -> void:
+## Memproses biaya harian otonom, memulihkan energi staf, dan memicu auto-save.
+func trigger_day_end_accounting() -> void:
+	_on_day_ended(TimeManager.day)
+	
+	# Memicu auto-save game di akhir shift
+	var save_mgr = get_node_or_null("/root/SaveManager")
+	if save_mgr:
+		save_mgr.save_game()
+
+## Memproses biaya harian otonom dan memulihkan energi staf saat hari berakhir.
+func _on_day_ended(ended_day_index: int) -> void:
+
 	# 1. Hitung dan catat gaji karyawan aktif
 	var total_wages: float = 0.0
 	var staff_mgr: Node = get_node_or_null("/root/StaffManager")

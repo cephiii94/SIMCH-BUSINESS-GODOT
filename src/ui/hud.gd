@@ -28,11 +28,43 @@ signal achievements_pressed
 @onready var stats_button: Button = %StatsButton
 @onready var achievements_button: Button = %AchievementsButton
 
+# Node dinamis untuk status toko dan aksi
+var status_label: Label = null
+var action_button: Button = null
 
 func _ready() -> void:
+	# Instansiasi label status toko secara programatis di sebelah jam
+	status_label = Label.new()
+	status_label.name = "ShopStatusLabel"
+	if time_label:
+		time_label.get_parent().add_child(status_label)
+		time_label.get_parent().move_child(status_label, time_label.get_index() + 1)
+		
+	# Instansiasi tombol aksi kerja (Buka Toko / Hari Berikutnya) di parent kontrol waktu
+	action_button = Button.new()
+	action_button.name = "ShopActionButton"
+	action_button.text = "Buka Toko"
+	action_button.custom_minimum_size = Vector2(120, 30)
+	if play_button:
+		play_button.get_parent().add_child(action_button)
+		action_button.pressed.connect(func() -> void:
+			if AudioManager: AudioManager.play_sfx("click")
+			if TimeManager:
+				if TimeManager.hour == 7:
+					TimeManager.skip_to_opening()
+				elif TimeManager.is_day_ending:
+					TimeManager.next_day()
+					# Tutup panel stats jika sedang ditampilkan sebagai dashboard EOS
+					var game_mgr = get_node_or_null("/root/GameManager")
+					if game_mgr and game_mgr.has_method("_on_stats_close_pressed"):
+						game_mgr._on_stats_close_pressed()
+			_update_action_button_state()
+		)
+
 	# Hubungkan sinyal EventBus
 	EventBus.time_tick.connect(_on_time_tick)
 	EventBus.money_changed.connect(_on_money_changed)
+
 	
 	# Hubungkan kontrol waktu
 	pause_button.pressed.connect(func() -> void:
@@ -102,6 +134,44 @@ func _ready() -> void:
 
 func _on_time_tick(day: int, hour: int, minute: int) -> void:
 	time_label.text = "Hari %d, %02d:%02d" % [day, hour, minute]
+	
+	# Update Label Status Toko
+	if status_label and TimeManager:
+		if TimeManager.is_shop_open:
+			status_label.text = " [BUKA]"
+			status_label.add_theme_color_override("font_color", Color(0.2, 0.9, 0.2)) # Hijau
+		else:
+			status_label.text = " [TUTUP]"
+			status_label.add_theme_color_override("font_color", Color(0.9, 0.2, 0.2)) # Merah
+			
+	# Update Visibilitas Tombol Aksi Kerja & Kontrol Waktu
+	_update_action_button_state()
+
+func _update_action_button_state() -> void:
+	if not TimeManager or not action_button:
+		return
+		
+	if TimeManager.hour == 7:
+		# Fase Persiapan Pagi
+		action_button.show()
+		action_button.text = "Buka Toko"
+		pause_button.hide()
+		play_button.hide()
+		fast_forward_button.hide()
+	elif TimeManager.is_day_ending:
+		# Akhir Hari (EOS) - Menunggu tombol Next Day
+		action_button.show()
+		action_button.text = "Hari Berikutnya"
+		pause_button.hide()
+		play_button.hide()
+		fast_forward_button.hide()
+	else:
+		# Jam Operasional Aktif (08:00 - 21:00)
+		action_button.hide()
+		pause_button.show()
+		play_button.show()
+		fast_forward_button.show()
+
 
 func _on_money_changed(new_balance: float) -> void:
 	cash_label.text = "$%.2f" % new_balance

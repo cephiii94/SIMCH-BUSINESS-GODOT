@@ -2,6 +2,9 @@ extends Node
 
 # Sinyal Siklus Waktu
 signal time_tick(day: int, hour: int, minute: int)
+signal end_of_shift
+signal day_started
+
 
 # Sinyal Ekonomi
 signal money_changed(new_balance: float)
