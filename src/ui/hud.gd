@@ -53,11 +53,9 @@ func _ready() -> void:
 				if TimeManager.hour == 7:
 					TimeManager.skip_to_opening()
 				elif TimeManager.is_day_ending:
-					TimeManager.next_day()
-					# Tutup panel stats jika sedang ditampilkan sebagai dashboard EOS
-					var game_mgr = get_node_or_null("/root/GameManager")
-					if game_mgr and game_mgr.has_method("_on_stats_close_pressed"):
-						game_mgr._on_stats_close_pressed()
+					var scene_root = get_tree().current_scene
+					if scene_root and scene_root.has_method("transition_to_next_day"):
+						scene_root.transition_to_next_day()
 			_update_action_button_state()
 		)
 
@@ -190,7 +188,7 @@ func _update_time_button_states() -> void:
 	if not TimeManager:
 		return
 		
-	var normal_style: StyleBox = preload("res://src/ui/hud.tscn").get_state().get_node_stylebox(Vector2(0,0)) if false else null
+	var normal_style: StyleBox = null
 	
 	# Bersihkan penanda aktif dari tombol
 	pause_button.release_focus()

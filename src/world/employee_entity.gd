@@ -118,6 +118,39 @@ func _process(delta: float) -> void:
 	else:
 		if visual_rect:
 			visual_rect.position.y = 0.0
+			
+	if state == "WALKING_OUT":
+		var target_pos: Vector2 = Vector2(-850, 200)
+		if global_position.distance_squared_to(target_pos) > 36.0:
+			var dir: Vector2 = (target_pos - global_position).normalized()
+			global_position += dir * _get_current_speed() * delta
+			if action_label:
+				action_label.text = "Pulang..."
+		else:
+			if action_label:
+				action_label.text = "Sampai Jumpa!"
+		return
+		
+	if state == "ENTERING":
+		var target_pos: Vector2 = Vector2(-220, 0) if role == "Cashier" else Vector2(-300, 50)
+		if _world_node:
+			if role == "Cashier":
+				var cashier_node: Marker2D = _world_node.get_node_or_null("CashierRegister") as Marker2D
+				if cashier_node:
+					target_pos = cashier_node.global_position + Vector2(-20, 0)
+			else:
+				target_pos = Vector2(-300, 50)
+				
+		if global_position.distance_squared_to(target_pos) > 36.0:
+			var dir: Vector2 = (target_pos - global_position).normalized()
+			global_position += dir * _get_current_speed() * delta
+			if action_label:
+				action_label.text = "Masuk Kerja..."
+		else:
+			state = "IDLE"
+			if action_label:
+				action_label.text = staff_name + " (Siaga)"
+		return
 		
 	match role:
 		"Cashier":
@@ -257,4 +290,7 @@ func _process_stocker_ai(delta: float) -> void:
 				state = "IDLE"
 				if action_label:
 					action_label.text = "Selesai!"
+
+func walk_out() -> void:
+	state = "WALKING_OUT"
 

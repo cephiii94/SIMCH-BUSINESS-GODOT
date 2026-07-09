@@ -23,6 +23,7 @@ var employee_nodes: Dictionary = {}
 
 # Timer pemijahan pelanggan
 var customer_spawn_timer: float = 2.0 # Muncul cepat saat awal bermain
+var force_instant_sync: bool = false
 
 func _ready() -> void:
 	if spawn_point and camera:
@@ -40,7 +41,9 @@ func _ready() -> void:
 	var staff_mgr: Node = get_node_or_null("/root/StaffManager")
 	if staff_mgr:
 		staff_mgr.staff_list_changed.connect(sync_employees)
+		force_instant_sync = true
 		sync_employees()
+		force_instant_sync = false
 		
 	# Hubungkan sinyal perubahan rak toko ritel
 	var shop_mgr: Node = get_node_or_null("/root/ShopManager")
@@ -94,15 +97,12 @@ func _end_of_shift() -> void:
 	TimeManager.time_scale = 0.0
 	TimeManager.is_day_ending = true
 	
-	# 2. Pulangkan karyawan secara visual
-	_clear_all_employees()
-	
-	# 3. Pemicu akuntansi akhir hari & pemulihan energi staf di EconomyManager
+	# 2. Pemicu akuntansi akhir hari & pemulihan energi staf di EconomyManager
 	var eco_mgr: Node = get_node_or_null("/root/EconomyManager")
 	if eco_mgr:
 		eco_mgr.trigger_day_end_accounting()
 		
-	# 4. Pancarkan sinyal EOS
+	# 3. Pancarkan sinyal EOS
 	EventBus.end_of_shift.emit()
 
 func _clear_all_employees() -> void:
@@ -111,6 +111,12 @@ func _clear_all_employees() -> void:
 		if is_instance_valid(node):
 			node.queue_free()
 	employee_nodes.clear()
+
+func start_staff_walking_out() -> void:
+	for staff_id in employee_nodes:
+		var node = employee_nodes[staff_id]
+		if is_instance_valid(node) and node.has_method("walk_out"):
+			node.walk_out()
 
 
 ## Men-spawn pelanggan baru di jalan kiri luar toko.
@@ -161,10 +167,15 @@ func sync_employees() -> void:
 			emp.speed_mult = staff["speed"]
 			
 			# Penempatan posisi spawn awal
-			if staff["role"] == "Cashier":
-				emp.global_position = Vector2(-220, 0)
+			if force_instant_sync:
+				if staff["role"] == "Cashier":
+					emp.global_position = Vector2(-220, 0)
+				else:
+					emp.global_position = Vector2(-300, 50)
+				emp.state = "IDLE"
 			else:
-				emp.global_position = Vector2(-300, 50)
+				emp.global_position = Vector2(-850, 200) # Spawn di pintu masuk jalan raya
+				emp.state = "ENTERING"
 				
 			if entities:
 				entities.add_child(emp)

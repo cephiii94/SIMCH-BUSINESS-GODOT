@@ -396,3 +396,52 @@ func _on_achievement_unlocked(_id: String, title: String, reward_desc: String) -
 		ui.add_child(notif)
 		notif.setup(title, reward_desc)
 
+func transition_to_next_day() -> void:
+	# 1. Nonaktifkan tombol agar tidak di-klik ganda
+	if hud and hud.action_button:
+		hud.action_button.disabled = true
+		
+	# 2. Perintahkan staff untuk berjalan keluar
+	if world and world.has_method("start_staff_walking_out"):
+		world.start_staff_walking_out()
+		
+	# 3. Tunggu staff berjalan (1.5 detik) sebelum mulai fade out
+	await get_tree().create_timer(1.5).timeout
+	
+	# 4. Buat overlay hitam untuk transisi pudar (fade out)
+	var fade_rect: ColorRect = ColorRect.new()
+	fade_rect.color = Color.BLACK
+	fade_rect.modulate.a = 0.0
+	fade_rect.anchor_right = 1.0
+	fade_rect.anchor_bottom = 1.0
+	fade_rect.mouse_filter = Control.MOUSE_FILTER_STOP # Blokir input selama transisi
+	
+	if ui:
+		ui.add_child(fade_rect)
+		
+	var tween: Tween = create_tween()
+	tween.tween_property(fade_rect, "modulate:a", 1.0, 0.5)
+	await tween.finished
+	
+	# 5. Saat layar gelap:
+	# - Hapus semua karyawan secara fisik
+	if world and world.has_method("_clear_all_employees"):
+		world._clear_all_employees()
+		
+	# - Ganti hari di TimeManager
+	if TimeManager:
+		TimeManager.next_day()
+		
+	# - Tunggu sebentar dalam kegelapan (0.3 detik)
+	await get_tree().create_timer(0.3).timeout
+	
+	# 6. Transisi pudar masuk (fade in) kembali ke jam 7 pagi
+	var tween_in: Tween = create_tween()
+	tween_in.tween_property(fade_rect, "modulate:a", 0.0, 0.5)
+	await tween_in.finished
+	
+	# 7. Bersihkan rect dan aktifkan kembali tombol HUD
+	fade_rect.queue_free()
+	if hud and hud.action_button:
+		hud.action_button.disabled = false
+

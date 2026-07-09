@@ -200,7 +200,15 @@ func load_game() -> bool:
 				if staff_mgr.has_method("generate_random_applicants"):
 					staff_mgr.generate_random_applicants(3)
 					
+			var scene_root: Node = get_tree().current_scene
+			var world_node = scene_root.get_node_or_null("World") if scene_root else null
+			if world_node:
+				world_node.force_instant_sync = true
+			
 			staff_mgr.staff_list_changed.emit()
+			
+			if world_node:
+				world_node.force_instant_sync = false
 			
 	# 6. Muat Reputasi
 	if save_data.has("reputation") and save_data["reputation"] is Dictionary:
