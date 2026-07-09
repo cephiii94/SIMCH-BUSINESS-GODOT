@@ -120,8 +120,8 @@ func _on_day_ended(ended_day_index: int) -> void:
 	current_rent_maintenance = 0.0
 	current_expense = 0.0
 	
-	# 6. Reset energi dan produktivitas harian karyawan
-	if staff_mgr:
-		staff_mgr.reset_daily_stats()
+	# Catatan: Reset energi dan produktivitas harian karyawan ditunda ke awal hari berikutnya
+	# agar laporan akhir shift dapat menampilkan statistik karyawan hari itu dengan benar.
+
 
 

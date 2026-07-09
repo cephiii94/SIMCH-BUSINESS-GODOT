@@ -64,6 +64,12 @@ func _ready() -> void:
 	# Hubungkan sinyal EventBus
 	EventBus.time_tick.connect(_on_time_tick)
 	EventBus.money_changed.connect(_on_money_changed)
+	EventBus.end_of_shift.connect(_update_action_button_state)
+	
+	visibility_changed.connect(func() -> void:
+		if visible:
+			_update_action_button_state()
+	)
 
 	
 	# Hubungkan kontrol waktu

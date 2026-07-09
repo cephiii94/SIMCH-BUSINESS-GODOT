@@ -33,11 +33,6 @@ func _process(delta: float) -> void:
 		_advance_time()
 
 func _advance_time() -> void:
-	if hour >= 21:
-		# Kunci jam di 21:00 malam selama sisa pelanggan belanja, matikan status buka
-		is_shop_open = false
-		return
-		
 	minute += 1
 	if minute >= 60:
 		minute = 0
@@ -65,6 +60,7 @@ func next_day() -> void:
 	is_day_ending = false
 	_time_accumulator = 0.0
 	time_scale = 1.0 # Jalankan waktu kembali
+	EventBus.day_started.emit()
 	EventBus.time_tick.emit(day, hour, minute)
 
 

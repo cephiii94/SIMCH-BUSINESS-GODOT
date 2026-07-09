@@ -10,6 +10,7 @@ var applicants: Array = []
 func _ready() -> void:
 	# Buat pelamar awal
 	_generate_applicants()
+	EventBus.day_started.connect(reset_daily_stats)
 
 ## Menghasilkan daftar pelamar baru secara acak
 func _generate_applicants() -> void:
