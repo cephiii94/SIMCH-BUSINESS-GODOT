@@ -114,8 +114,8 @@ func _get_current_target_position() -> Vector2:
 		
 	match state:
 		"SPAWNING":
-			# Pintu masuk toko di koridor
-			return Vector2(-150, 150)
+			# Pintu masuk toko di koridor sisi kanan
+			return GameMap.cartesian_to_iso(Vector2(150, 150))
 		"SHOPPING":
 			# Koordinat rak barang yang ditargetkan
 			if current_list_idx < shopping_list.size():
@@ -127,19 +127,19 @@ func _get_current_target_position() -> Vector2:
 						var slot: Marker2D = rack_slots.get_node_or_null("Slot" + str(rack_idx)) as Marker2D
 						if slot:
 							return slot.global_position
-			return Vector2(-150, 150)
+			return GameMap.cartesian_to_iso(Vector2(150, 150))
 		"QUEUING":
-			# Mengantre di kasir
+			# Mengantre di kasir sisi kanan
 			var cashier: Marker2D = _world_node.get_node_or_null("CashierRegister") as Marker2D
 			if cashier:
 				return cashier.global_position
-			return Vector2(-200, 0)
+			return GameMap.cartesian_to_iso(Vector2(200, 0))
 		"LEAVING":
-			# Kembali ke titik keluar jalan raya
+			# Kembali ke titik keluar jalan raya sisi kanan
 			var spawn_pt: Marker2D = _world_node.get_node_or_null("CustomerSpawnPoint") as Marker2D
 			if spawn_pt:
 				return spawn_pt.global_position
-			return Vector2(-850, 200)
+			return GameMap.cartesian_to_iso(Vector2(850, 200))
 		_:
 			return global_position
 

@@ -25,9 +25,45 @@ var employee_nodes: Dictionary = {}
 var customer_spawn_timer: float = 2.0 # Muncul cepat saat awal bermain
 var force_instant_sync: bool = false
 
+# Daftar penampung visual untuk rak agar bisa dibersihkan/rebuild
+var visual_rack_nodes: Array = []
+
 func _ready() -> void:
+	# Atur z_index Map agar selalu digambar paling bawah di bawah entitas
+	var map_node = get_node_or_null("Map")
+	if map_node:
+		map_node.z_index = -10
+		
+	# Y-sorting dinonaktifkan di root agar tidak mengacaukan layer Map vs Entities,
+	# tetapi diaktifkan di dalam Entities agar karakter & objek saling ter-sortir.
+	y_sort_enabled = false
+	if entities:
+		entities.y_sort_enabled = true
+
+	# Mengubah semua Marker2D utama ke koordinat isometrik (sambil menegasikan X Cartesian agar tertukar posisinya)
+	for child in get_children():
+		if child is Marker2D:
+			child.position.x = -child.position.x
+			child.global_position = GameMap.cartesian_to_iso(child.global_position)
+			
+	if pallet_slots_parent:
+		for slot in pallet_slots_parent.get_children():
+			if slot is Marker2D:
+				slot.position.x = -slot.position.x
+				slot.global_position = GameMap.cartesian_to_iso(slot.global_position)
+
 	if spawn_point and camera:
 		camera.global_position = spawn_point.global_position
+		
+	# Spawn meja kasir visual yang Y-sorted (Dipindahkan ke sisi kanan)
+	var cashier_ent = Node2D.new()
+	cashier_ent.set_script(preload("res://src/world/static_entity.gd"))
+	cashier_ent.type = "cashier"
+	cashier_ent.global_position = GameMap.cartesian_to_iso(Vector2(200, 0))
+	if entities:
+		entities.add_child(cashier_ent)
+	else:
+		add_child(cashier_ent)
 		
 	# Hubungkan sinyal waktu dari EventBus
 	EventBus.time_tick.connect(_on_time_tick)
@@ -133,7 +169,7 @@ func spawn_customer() -> void:
 	if customer_spawn_point:
 		customer.global_position = customer_spawn_point.global_position
 	else:
-		customer.global_position = Vector2(-850, 200)
+		customer.global_position = GameMap.cartesian_to_iso(Vector2(850, 200))
 		
 	print("[INFO] Pelanggan baru memasuki toko.")
 
@@ -169,12 +205,12 @@ func sync_employees() -> void:
 			# Penempatan posisi spawn awal
 			if force_instant_sync:
 				if staff["role"] == "Cashier":
-					emp.global_position = Vector2(-220, 0)
+					emp.global_position = GameMap.cartesian_to_iso(Vector2(220, 0))
 				else:
-					emp.global_position = Vector2(-300, 50)
+					emp.global_position = GameMap.cartesian_to_iso(Vector2(300, 50))
 				emp.state = "IDLE"
 			else:
-				emp.global_position = Vector2(-850, 200) # Spawn di pintu masuk jalan raya
+				emp.global_position = GameMap.cartesian_to_iso(Vector2(850, 200)) # Spawn di pintu masuk jalan raya
 				emp.state = "ENTERING"
 				
 			if entities:
@@ -226,7 +262,7 @@ func spawn_box(item_id: String) -> void:
 	if loading_dock:
 		box.global_position = loading_dock.global_position
 	else:
-		box.global_position = Vector2(800, 0)
+		box.global_position = GameMap.cartesian_to_iso(Vector2(-800, 0))
 		
 	# Setup visual dan target pergeseran
 	box.setup(item_id, target_pos)
@@ -256,7 +292,7 @@ func remove_box(item_id: String) -> void:
 			slot_occupants.erase(found_slot_idx)
 			
 		# Luncurkan box ke koridor penghubung tengah (keluar dari gudang menuju toko)
-		var exit_pos: Vector2 = Vector2(-200, 0)
+		var exit_pos: Vector2 = GameMap.cartesian_to_iso(Vector2(200, 0))
 		found_box.dispatch(exit_pos)
 	else:
 		print("[WARNING-WORLD] Box barang untuk item '", item_id, "' tidak ditemukan di gudang!")
@@ -325,12 +361,28 @@ func sync_racks() -> void:
 	for child in rack_slots.get_children():
 		child.queue_free()
 		
+	# Bersihkan visual rak lama
+	for node in visual_rack_nodes:
+		if is_instance_valid(node):
+			node.queue_free()
+	visual_rack_nodes.clear()
+		
 	# Buat ulang penanda otonom Marker2D sesuai koordinat dinamis dari GameMap
 	for i in range(ShopManager.racks.size()):
 		var marker: Marker2D = Marker2D.new()
 		marker.name = "Slot" + str(i)
-		marker.global_position = GameMap.get_rack_position(i)
+		marker.global_position = GameMap.cartesian_to_iso(GameMap.get_rack_position(i))
 		rack_slots.add_child(marker)
+		
+		# Spawn visual rak yang Y-sorted
+		var rack_ent = Node2D.new()
+		rack_ent.set_script(preload("res://src/world/static_entity.gd"))
+		rack_ent.type = "rack"
+		rack_ent.index = i
+		rack_ent.global_position = GameMap.cartesian_to_iso(GameMap.get_rack_position(i))
+		if entities:
+			entities.add_child(rack_ent)
+			visual_rack_nodes.append(rack_ent)
 
 func _on_time_tick(_day: int, hour: int, minute: int) -> void:
 	if canvas_modulate:

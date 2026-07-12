@@ -15,11 +15,11 @@ var _target_zoom: Vector2 = Vector2.ONE
 var _is_dragging: bool = false
 
 func _ready() -> void:
-	# Atur batas kamera agar tidak bisa keluar dari peta 2000x2000
-	limit_left = int(-MAP_LIMIT)
-	limit_right = int(MAP_LIMIT)
-	limit_top = int(-MAP_LIMIT)
-	limit_bottom = int(MAP_LIMIT)
+	# Atur batas kamera agar tidak bisa keluar dari peta isometrik 2.5D
+	limit_left = -2200
+	limit_right = 2200
+	limit_top = -1100
+	limit_bottom = 1100
 	
 	# Aktifkan pergerakan posisi halus bawaan Godot
 	position_smoothing_enabled = true

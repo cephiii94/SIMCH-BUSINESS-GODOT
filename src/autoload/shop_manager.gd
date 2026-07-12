@@ -44,6 +44,7 @@ func _ready() -> void:
 			"max_capacity": 10
 		}
 	]
+	racks_changed.emit()
 
 ## Penyetelan harga jual eceran.
 func set_price(item_id: String, price: float) -> void:

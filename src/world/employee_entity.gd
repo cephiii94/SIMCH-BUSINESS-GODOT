@@ -120,7 +120,11 @@ func _process(delta: float) -> void:
 			visual_rect.position.y = 0.0
 			
 	if state == "WALKING_OUT":
-		var target_pos: Vector2 = Vector2(-850, 200)
+		var target_pos: Vector2 = GameMap.cartesian_to_iso(Vector2(850, 200))
+		if _world_node:
+			var spawn_pt = _world_node.get_node_or_null("CustomerSpawnPoint") as Marker2D
+			if spawn_pt:
+				target_pos = spawn_pt.global_position
 		if global_position.distance_squared_to(target_pos) > 36.0:
 			var dir: Vector2 = (target_pos - global_position).normalized()
 			global_position += dir * _get_current_speed() * delta
@@ -132,14 +136,14 @@ func _process(delta: float) -> void:
 		return
 		
 	if state == "ENTERING":
-		var target_pos: Vector2 = Vector2(-220, 0) if role == "Cashier" else Vector2(-300, 50)
+		var target_pos: Vector2 = GameMap.cartesian_to_iso(Vector2(220, 0)) if role == "Cashier" else GameMap.cartesian_to_iso(Vector2(300, 50))
 		if _world_node:
 			if role == "Cashier":
 				var cashier_node: Marker2D = _world_node.get_node_or_null("CashierRegister") as Marker2D
 				if cashier_node:
-					target_pos = cashier_node.global_position + Vector2(-20, 0)
+					target_pos = cashier_node.global_position + Vector2(20, 0)
 			else:
-				target_pos = Vector2(-300, 50)
+				target_pos = GameMap.cartesian_to_iso(Vector2(300, 50))
 				
 		if global_position.distance_squared_to(target_pos) > 36.0:
 			var dir: Vector2 = (target_pos - global_position).normalized()
@@ -173,12 +177,12 @@ func _update_energy_visuals() -> void:
 
 func _process_cashier_ai(delta: float) -> void:
 	# Kasir selalu berjaga di Meja Kasir
-	var cashier_target: Vector2 = Vector2(-220, 0)
+	var cashier_target: Vector2 = GameMap.cartesian_to_iso(Vector2(220, 0))
 	if _world_node:
 		var cashier_node: Marker2D = _world_node.get_node_or_null("CashierRegister") as Marker2D
 		if cashier_node:
 			# Berdiri sedikit di belakang meja kasir
-			cashier_target = cashier_node.global_position + Vector2(-20, 0)
+			cashier_target = cashier_node.global_position + Vector2(20, 0)
 			
 	if global_position.distance_squared_to(cashier_target) > 25.0:
 		var dir: Vector2 = (cashier_target - global_position).normalized()
@@ -219,7 +223,7 @@ func _process_stocker_ai(delta: float) -> void:
 					action_label.text = "Ambil " + DatabaseManager.get_item(target_item_id).name.split(" ")[0]
 			else:
 				# Kembali siaga di tengah toko ritel
-				var home_pos: Vector2 = Vector2(-300, 50)
+				var home_pos: Vector2 = GameMap.cartesian_to_iso(Vector2(300, 50))
 				if global_position.distance_squared_to(home_pos) > 64.0:
 					var dir: Vector2 = (home_pos - global_position).normalized()
 					global_position += dir * _get_current_speed() * delta
@@ -229,7 +233,7 @@ func _process_stocker_ai(delta: float) -> void:
 						
 		"WALKING_TO_WAREHOUSE":
 			# Cari posisi koordinat box fisik di gudang
-			var target_pos: Vector2 = Vector2(400, 0) # Default posisi tengah gudang
+			var target_pos: Vector2 = GameMap.cartesian_to_iso(Vector2(-400, 0)) # Default posisi tengah gudang
 			if _world_node:
 				var found_slot_idx: int = -1
 				for slot_idx in _world_node.slot_occupants:
@@ -274,7 +278,7 @@ func _process_stocker_ai(delta: float) -> void:
 					
 		"WALKING_TO_SHELF":
 			# Cari koordinat rak ritel di toko
-			var target_pos: Vector2 = Vector2(-400, 0)
+			var target_pos: Vector2 = GameMap.cartesian_to_iso(Vector2(400, 0))
 			if _world_node:
 				var rack_slots: Node2D = _world_node.get_node_or_null("RackSlots") as Node2D
 				if rack_slots:
