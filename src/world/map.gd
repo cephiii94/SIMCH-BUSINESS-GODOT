@@ -87,14 +87,14 @@ func _draw() -> void:
 	var half_size: int = MAP_SIZE / 2
 	
 	# 1. Gambar Area Lantai Isometrik (Toko di kanan, Gudang di kiri)
-	# Lantai Toko Ritel (Sisi Kanan, x > 100) - Coklat Kayu Hangat
-	draw_iso_rect(Rect2(100, -half_size, half_size - 100, MAP_SIZE), Color(0.24, 0.20, 0.16, 1.0))
+	# Lantai Toko Ritel (Sisi Kanan, x > 12) - Coklat Kayu Hangat
+	draw_iso_rect(Rect2(12, -half_size, half_size - 12, MAP_SIZE), Color(0.24, 0.20, 0.16, 1.0))
 	
-	# Lantai Gudang (Sisi Kiri, x < -100) - Kelabu Beton
-	draw_iso_rect(Rect2(-half_size, -half_size, half_size - 100, MAP_SIZE), Color(0.16, 0.18, 0.21, 1.0))
+	# Lantai Gudang (Sisi Kiri, x < -12) - Kelabu Beton
+	draw_iso_rect(Rect2(-half_size, -half_size, half_size - 12, MAP_SIZE), Color(0.16, 0.18, 0.21, 1.0))
 	
-	# Koridor Penghubung Tengah (-100 <= x <= 100) - Abu-Abu Gelap
-	draw_iso_rect(Rect2(-100, -half_size, 200, MAP_SIZE), Color(0.12, 0.13, 0.15, 1.0))
+	# Koridor Penghubung Tengah (-12 <= x <= 12) - Abu-Abu Gelap
+	draw_iso_rect(Rect2(-12, -half_size, 24, MAP_SIZE), Color(0.12, 0.13, 0.15, 1.0))
 	
 	# 2. Gambar Garis Kisi-Kisi miring (Grid Overlay)
 	var grid_color: Color = Color(0.25, 0.28, 0.33, 0.25)
@@ -140,13 +140,13 @@ func _draw() -> void:
 	var wall_base_color: Color = Color(0.85, 0.80, 0.74, 0.5) # Transparansi 50% krem
 	
 	# Dinding atas (y dari -half_size sampai -96)
-	draw_extruded_wall(Rect2(-100, -half_size, 200, half_size - 96), 40.0, wall_base_color)
+	draw_extruded_wall(Rect2(-12, -half_size, 24, half_size - 96), 40.0, wall_base_color)
 	# Dinding bawah (y dari 96 sampai half_size)
-	draw_extruded_wall(Rect2(-100, 96, 200, half_size - 96), 40.0, wall_base_color)
+	draw_extruded_wall(Rect2(-12, 96, 24, half_size - 96), 40.0, wall_base_color)
 	
 	# Celah pintu terbuka (y dari -96 ke 96) - Gambar garis ambang pintu
-	draw_line(cartesian_to_iso(Vector2(-100, -96)), cartesian_to_iso(Vector2(100, -96)), Color(0.35, 0.35, 0.35), 3.0)
-	draw_line(cartesian_to_iso(Vector2(-100, 96)), cartesian_to_iso(Vector2(100, 96)), Color(0.35, 0.35, 0.35), 3.0)
+	draw_line(cartesian_to_iso(Vector2(-12, -96)), cartesian_to_iso(Vector2(12, -96)), Color(0.35, 0.35, 0.35), 3.0)
+	draw_line(cartesian_to_iso(Vector2(-12, 96)), cartesian_to_iso(Vector2(12, 96)), Color(0.35, 0.35, 0.35), 3.0)
 	
 	# 8. Gambar Dinding Batas Luar Peta (Solid 80px Tinggi - Krem hangat pejal untuk efek ruangan dalam reference)
 	var outer_wall_color: Color = Color(0.85, 0.80, 0.74, 1.0) # Pejal 100% krem
